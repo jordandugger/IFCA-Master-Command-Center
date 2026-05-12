@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IFCA Integration Setup Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07101e; --panel: #0d1929; --panel2: #111f30; --panel3: #162437;
+  --border: #1e3050; --border2: #243a5a; --text: #c8d8ea; --muted: #4e6a88;
+  --green: #10b981; --amber: #f59e0b; --red: #f87171; --blue: #60a5fa;
+  --accent: #38bdf8; --gold: #fbbf24; --white: #f0f6ff; --purple: #a78bfa;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; font-size: 14px; line-height: 1.6; }
+
+.header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; gap: 16px; }
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: var(--white); }
+.logo span { color: var(--accent); }
+.badge { font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: var(--panel3); border: 1px solid var(--border); color: var(--muted); padding: 3px 10px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.main { max-width: 900px; margin: 0 auto; padding: 36px 32px; }
+
+.toc { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 36px; }
+.toc-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+.toc a { display: block; color: var(--accent); text-decoration: none; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.toc a:last-child { border-bottom: none; }
+.toc a:hover { color: var(--white); }
+.toc-section { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 12px; margin-bottom: 6px; }
+
+h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 28px; color: var(--white); margin-bottom: 8px; }
+h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; color: var(--white); margin: 36px 0 16px; display: flex; align-items: center; gap: 10px; }
+h2 .num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: var(--accent); color: #07101e; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+h3 { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 15px; color: var(--accent); margin: 20px 0 10px; }
+p { margin-bottom: 12px; }
+
+.step-block { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+.step-header { background: var(--panel3); padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+.step-num { width: 22px; height: 22px; background: var(--accent); color: #07101e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.step-title { font-weight: 600; color: var(--white); font-size: 13px; }
+.step-body { padding: 14px 16px; }
+
+code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--panel3); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; color: var(--accent); }
+
+pre { background: var(--panel3); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; }
+pre code { background: none; border: none; padding: 0; color: var(--green); font-size: 12px; line-height: 1.6; }
+
+.callout { border-radius: 8px; padding: 12px 16px; margin: 14px 0; display: flex; gap: 10px; }
+.callout-warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); }
+.callout-info { background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.2); }
+.callout-success { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); }
+.callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.callout-text { font-size: 13px; }
+.callout-warn .callout-text { color: var(--amber); }
+.callout-info .callout-text { color: var(--accent); }
+.callout-success .callout-text { color: var(--green); }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+.tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+.tag-time { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+.tag-diff { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.tag-cost { background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.comp-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.comp-card h4 { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+.comp-card li { font-size: 12px; margin-bottom: 4px; list-style: none; padding-left: 14px; position: relative; }
+.comp-card li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+
+.url-box { background: var(--panel3); border: 1px solid var(--accent); border-radius: 6px; padding: 10px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--gold); margin: 10px 0; word-break: break-all; }
+
+.fields-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+.fields-table th { background: var(--panel3); padding: 8px 12px; text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); border: 1px solid var(--border); }
+.fields-table td { padding: 8px 12px; border: 1px solid var(--border); }
+.fields-table tr:hover td { background: rgba(56,189,248,0.02); }
+
+.final-box { background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(56,189,248,0.04)); border: 1px solid rgba(251,191,36,0.25); border-radius: 10px; padding: 20px 24px; margin-top: 32px; }
+.final-box h3 { color: var(--gold); margin-top: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">IFCA <span>×</span> FCA</div>
+  <div class="badge">Integration Setup Guide</div>
+  <div class="badge" style="color:var(--green);border-color:rgba(16,185,129,0.3);">May 2026</div>
+</div>
+
+<div class="main">
+
+<h1>Data Integration Playbook</h1>
+<p style="color:var(--muted);margin-bottom:24px;">PIF Perfect webhook → Google Sheets + Meta Ads MCP for Claude. Two separate setups, both feeding live data into the Projections Calculator.</p>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-section">Part 1 — PIF Perfect</div>
+  <a href="#pif-overview">Overview & how it works</a>
+  <a href="#pif-step1">Step 1 — Create the Google Sheet</a>
+  <a href="#pif-step2">Step 2 — Paste the Apps Script</a>
+  <a href="#pif-step3">Step 3 — Deploy as Web App</a>
+  <a href="#pif-step4">Step 4 — Configure webhook in PIF Perfect</a>
+  <a href="#pif-step5">Step 5 — Test & verify</a>
+  <a href="#pif-payload">Payload field mapping</a>
+  <div class="toc-section">Part 2 — Meta Ads MCP</div>
+  <a href="#meta-overview">Overview & which path to use</a>
+  <a href="#meta-official">Option A — Meta's official MCP (recommended)</a>
+  <a href="#meta-pipeboard">Option B — Pipeboard (easiest, no setup)</a>
+  <a href="#meta-queries">What to ask Claude once connected</a>
+  <div class="toc-section">Part 3 — Calculator Integration</div>
+  <a href="#calc-connect">Connecting both data sources to the calculator</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PART 1: PIF PERFECT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<h2 id="pif-overview"><span class="num">PART 1</span> PIF Perfect → Google Sheets Webhook</h2>
+
+<div class="tag-row">
+  <span class="tag tag-time">~30 min total setup</span>
+  <span class="tag tag-diff">No coding required</span>
+  <span class="tag tag-cost">Free (Google Apps Script)</span>
+</div>
+
+<p>PIF Perfect's Growth plan ($247/mo) supports outbound webhooks. When a rep submits their daily numbers, PIF fires an HTTP POST to a URL you control. You'll set that URL to a Google Apps Script web app that catches the data and writes it into a Google Sheet. The Projections Calculator then reads from that sheet.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-icon">⚠️</div>
+  <div class="callout-text"><strong>Growth plan required.</strong> Webhooks are not available on the Starter ($97/mo) plan. If you're on Starter, skip to the manual CSV path at the bottom of this section.</div>
+</div>
+
+<div class="comparison">
+  <div class="comp-card">
+    <h4>What flows automatically</h4>
+    <li>Rep name</li>
+    <li>Submission date</li>
+    <li>Calls made</li>
+    <li>Sets booked</li>
+    <li>Live calls</li>
+    <li>Closed deals</li>
+    <li>Revenue generated</li>
+  </div>
+  <div class="comp-card">
+    <h4>What gets auto-calculated</h4>
+    <li>Close rate % per rep</li>
+    <li>Set rate % per rep</li>
+    <li>Show rate % per rep</li>
+    <li>MTD totals (all reps)</li>
+    <li>MTD averages</li>
+    <li>Per-rep leaderboard</li>
+  </div>
+</div>
+
+<!-- STEP 1 -->
+<div id="pif-step1"></div>
+<h3>Step 1 — Create a new Google Sheet</h3>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Go to sheets.google.com → click "+ New spreadsheet"</div></div>
+  <div class="step-body">Name it <code>IFCA Sales Data Hub</code>. This sheet will receive all PIF Perfect submissions and be the data source for the Projections Calculator. Share it with Clementine, Kevin, and Erin so they have access.</div>
+</div>
+
+<!-- STEP 2 -->
+<div id="pif-step2"></div>
+<h3>Step 2 — Install the Apps Script</h3>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Open the script editor</div></div>
+  <div class="step-body">Inside your new sheet: <strong>Extensions → Apps Script</strong>. A new tab opens with a code editor.</div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Replace the default code</div></div>
+  <div class="step-body">Delete everything in the editor. Paste the full contents of the <code>PIF_Webhook_Script.gs</code> file attached to this setup package. The script is ~150 lines and handles all the logic automatically.</div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Run the test function first</div></div>
+  <div class="step-body">In the editor, select <code>testWebhook</code> from the function dropdown and click ▶ Run. It will ask for permissions — approve them. Then check your Google Sheet — you should see a new <strong>PIF_Live_Data</strong> tab with one row of test data (Janie, 3 closes, $37,500). If that row appears, the script is working.</div>
+</div>
+
+<!-- STEP 3 -->
+<div id="pif-step3"></div>
+<h3>Step 3 — Deploy as a Web App</h3>
+
+<div class="callout callout-info">
+  <div class="callout-icon">ℹ️</div>
+  <div class="callout-text">This creates a public HTTPS URL that PIF Perfect can POST data to. The URL is long and unguessable — treat it like a password.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Click "Deploy" → "New deployment"</div></div>
+  <div class="step-body">In the Apps Script editor, top-right corner.</div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Configure the deployment</div></div>
+  <div class="step-body">
+    Select type: <strong>Web app</strong><br><br>
+    Description: <code>PIF Perfect Webhook Receiver</code><br>
+    Execute as: <strong>Me (your Google account)</strong><br>
+    Who has access: <strong>Anyone</strong> ← this is required so PIF can POST to it
+  </div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Copy the Web App URL</div></div>
+  <div class="step-body">
+    After clicking Deploy, Google shows you a URL. It looks like this:
+    <div class="url-box">https://script.google.com/macros/s/AKfycbx<strong>[long random string]</strong>/exec</div>
+    Copy this. You'll paste it into PIF Perfect in the next step. <strong>Save it somewhere safe</strong> — you'll need it again if you redeploy.
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div id="pif-step4"></div>
+<h3>Step 4 — Configure the webhook in PIF Perfect</h3>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Log into app.pifperfect.com</div></div>
+  <div class="step-body">Go to <strong>Settings → Integrations → Webhooks</strong> (or similar — PIF Perfect's UI may differ slightly; look for "Integrations" or "Developer" in the sidebar).</div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Add a new webhook</div></div>
+  <div class="step-body">
+    Webhook URL: paste your Google Apps Script URL<br>
+    Trigger event: <strong>Submission Created</strong> (or equivalent — fires when a rep submits their daily numbers)<br>
+    Format: <strong>JSON</strong>
+  </div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">If PIF doesn't have a Webhooks UI</div></div>
+  <div class="step-body">Email <code>support@pifperfect.com</code> and say: <em>"We're on the Growth plan and want to set up an outbound webhook to send submission data to a Google Apps Script endpoint. Can you enable this and share the payload format?"</em> They'll either enable it in your account or confirm it's on their roadmap.</div>
+</div>
+
+<!-- STEP 5 -->
+<div id="pif-step5"></div>
+<h3>Step 5 — Test the live connection</h3>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Submit a test entry in PIF Perfect</div></div>
+  <div class="step-body">Have one rep (or yourself) submit a daily entry in PIF Perfect. Within 5–10 seconds, a new row should appear in the <strong>PIF_Live_Data</strong> tab of your Google Sheet.</div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Check the Webhook_Log tab</div></div>
+  <div class="step-body">The script logs every raw payload received. If something isn't mapping correctly (wrong field names), you'll see the raw JSON there. Share it with whoever updates the script (or paste it into Claude and say "fix the field mapping").</div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Check the PIF_Summary tab</div></div>
+  <div class="step-body">This tab auto-updates with MTD totals every time a submission comes in. This is the tab your Projections Calculator will read from.</div>
+</div>
+
+<!-- PAYLOAD MAP -->
+<div id="pif-payload"></div>
+<h3>Payload field reference</h3>
+<p>The script tries several common field name variants automatically. If PIF uses different names, update these in the <code>writeSubmission()</code> function:</p>
+
+<table class="fields-table">
+  <thead><tr><th>Metric</th><th>Field names the script checks</th><th>Fallback</th></tr></thead>
+  <tbody>
+    <tr><td>Rep name</td><td><code>rep_name</code>, <code>user.name</code>, <code>name</code></td><td>"Unknown"</td></tr>
+    <tr><td>Date</td><td><code>date</code>, <code>submission_date</code></td><td>Today's date</td></tr>
+    <tr><td>Calls made</td><td><code>calls_made</code>, <code>metrics.calls</code></td><td>0</td></tr>
+    <tr><td>Sets booked</td><td><code>sets</code>, <code>meetings_set</code>, <code>metrics.sets</code></td><td>0</td></tr>
+    <tr><td>Live calls</td><td><code>live_calls</code>, <code>metrics.live_calls</code></td><td>0</td></tr>
+    <tr><td>Closed deals</td><td><code>closed</code>, <code>deals_closed</code>, <code>metrics.closed</code></td><td>0</td></tr>
+    <tr><td>Revenue</td><td><code>revenue</code>, <code>metrics.revenue</code></td><td>0</td></tr>
+  </tbody>
+</table>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PART 2: META ADS MCP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<h2 id="meta-overview"><span class="num">PART 2</span> Meta Ads MCP for Claude</h2>
+
+<div class="tag-row">
+  <span class="tag tag-time">5–15 min setup</span>
+  <span class="tag tag-diff">No coding required</span>
+  <span class="tag tag-cost">Free (Meta's official MCP is free in beta)</span>
+</div>
+
+<p>Meta launched their official MCP server on April 29, 2026. It connects Claude directly to your live Meta Ads account — no API keys, no developer app, no App Review wait. You can pull CPL, ROAS, spend, campaign performance, and creative data by just asking Claude in plain English.</p>
+
+<div class="callout callout-success">
+  <div class="callout-icon">✅</div>
+  <div class="callout-text"><strong>This is officially Meta-sanctioned automation.</strong> The old concern about "using AI to manage Meta Ads gets your account flagged" is now retired. This is Meta's own integration path, using the same OAuth as Shopify and Mailchimp.</div>
+</div>
+
+<p>You have two good options. <strong>Option A is the right call for your setup</strong> — it's Meta's own server, free, and Craig (your ads manager) can connect his account directly.</p>
+
+<!-- OPTION A -->
+<div id="meta-official"></div>
+<h3>Option A — Meta's Official MCP (Recommended)</h3>
+
+<div class="tag-row">
+  <span class="tag tag-time">~7 min</span>
+  <span class="tag tag-cost">Free during beta</span>
+  <span class="tag tag-diff">Official Meta integration</span>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Find your Meta Business ID</div></div>
+  <div class="step-body">
+    Go to <strong>business.facebook.com → Business Settings → Business Info</strong>. Your Business ID is the number listed at the top. It looks like: <code>123456789012345</code>
+  </div>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Open Claude Desktop settings</div></div>
+  <div class="step-body">
+    You need <strong>Claude Desktop</strong> (the Mac or Windows app, not claude.ai in a browser). Download it at <strong>claude.ai/download</strong> if you don't have it.<br><br>
+    Once open: <strong>Claude menu → Settings → Developer → Edit Config</strong>
+  </div>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Add the Meta MCP server to your config</div></div>
+  <div class="step-body">
+    The config file is a JSON file. Add this inside the <code>"mcpServers"</code> block, replacing <code>YOUR_BUSINESS_ID</code> with your actual number:
+    <pre><code>{
+  "mcpServers": {
+    "meta-ads": {
+      "url": "https://mcp.meta.com/ads/YOUR_BUSINESS_ID"
+    }
+  }
+}</code></pre>
+    If there are already other servers in the config, just add the <code>"meta-ads"</code> block alongside them — don't replace anything.
+  </div>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">4</div><div class="step-title">Restart Claude Desktop and authenticate</div></div>
+  <div class="step-body">Quit and reopen Claude Desktop. On the next message you send, Claude will prompt you to authenticate with Meta via Facebook Business OAuth — the same login flow as any third-party app. Log in with the account that has admin access to your ad account. You'll be redirected back to Claude once done.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">5</div><div class="step-title">Verify it's connected</div></div>
+  <div class="step-body">Ask Claude: <em>"Show me my Meta ad accounts."</em> It should return your account names and IDs. If it does, you're live.</div>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-icon">⚠️</div>
+  <div class="callout-text"><strong>Craig should connect his account, not yours.</strong> Craig is your paid acquisition manager and runs the ad account day-to-day. Have Craig do steps 1–5 on his machine, authenticating with his Meta Business account. That way Claude pulls from the ad account Craig actually manages. You can also connect your account for read-only visibility.</div>
+</div>
+
+<!-- OPTION B -->
+<div id="meta-pipeboard"></div>
+<h3>Option B — Pipeboard (Zero setup, works in browser)</h3>
+
+<div class="tag-row">
+  <span class="tag tag-time">~2 min</span>
+  <span class="tag tag-cost">Paid (~$49–99/mo)</span>
+  <span class="tag tag-diff">Works in claude.ai browser (no Desktop required)</span>
+</div>
+
+<p>If you want Meta Ads data in Claude without downloading Claude Desktop, Pipeboard is the fastest path. It's a hosted MCP — you connect your Meta account at <strong>pipeboard.co</strong>, they give you an MCP URL, and you paste it into Claude's MCP settings in the browser.</p>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Sign up at pipeboard.co and connect your Meta Ads account</div></div>
+  <div class="step-body">OAuth flow — same as logging into any app with Facebook.</div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Copy your MCP URL from Pipeboard dashboard</div></div>
+  <div class="step-body">It looks like: <code>https://meta-ads.mcp.pipeboard.co/YOUR_TOKEN</code></div>
+</div>
+<div class="step-block">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Add to Claude Desktop config or claude.ai settings</div></div>
+  <div class="step-body">Same JSON config block as Option A, just swap in the Pipeboard URL.</div>
+</div>
+
+<!-- META QUERIES -->
+<div id="meta-queries"></div>
+<h3>What to ask Claude once Meta Ads is connected</h3>
+
+<p>These are the specific queries that feed into your Projections Calculator:</p>
+
+<table class="fields-table">
+  <thead><tr><th>What you need</th><th>Ask Claude this</th></tr></thead>
+  <tbody>
+    <tr><td>MTD ad spend</td><td><em>"What's our total Meta ad spend month-to-date for [account name]?"</em></td></tr>
+    <tr><td>Cost per lead</td><td><em>"What's our CPL on the IFCA VSL campaign for the last 30 days?"</em></td></tr>
+    <tr><td>Cost per booked call</td><td><em>"What's cost per booked call (lead form submission) this month?"</em></td></tr>
+    <tr><td>ROAS</td><td><em>"What's our ROAS on the Client Engine campaign last 7 days vs. prior 7 days?"</em></td></tr>
+    <tr><td>Top performing creatives</td><td><em>"Which ad creatives have the lowest CPL this month? Show me top 5."</em></td></tr>
+    <tr><td>Campaign pacing</td><td><em>"Are we on pace to hit $88K spend this month? What's the daily run rate?"</em></td></tr>
+    <tr><td>Projections meeting prep</td><td><em>"Give me a summary of last month's Meta Ads performance: total spend, CPL, total leads, cost per booked call, and ROAS. Format it for a monthly projections meeting."</em></td></tr>
+  </tbody>
+</table>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PART 3: CONNECTING TO CALCULATOR -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<h2 id="calc-connect"><span class="num">PART 3</span> Connecting to the Projections Calculator</h2>
+
+<p>Once both integrations are live, here's how the monthly projections meeting workflow changes:</p>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">Before the meeting (5 min — Clementine or Kevin)</div></div>
+  <div class="step-body">
+    Open the <strong>PIF_Summary</strong> tab in the Google Sheet. Copy the MTD values into the FE Sales tab of the Projections Calculator — closes, live calls, close rate by rep. Since PIF fires in real-time, this data is always current.<br><br>
+    <em>Future upgrade: embed the Google Sheet directly into the calculator so it auto-reads via fetch. We can build that once the webhook is confirmed working.</em>
+  </div>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">At the start of the meeting — Meta Ads pull (Craig)</div></div>
+  <div class="step-body">
+    Craig opens Claude Desktop with the Meta MCP connected and runs:<br><br>
+    <em>"Give me last month's final numbers: total spend, CPL, total leads assigned, cost per booked call, ROAS generated, ROAS collected."</em><br><br>
+    Paste those into the Marketing section of the FE Sales tab. Takes 60 seconds.
+  </div>
+</div>
+
+<div class="step-block">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">Set projections for next month</div></div>
+  <div class="step-body">
+    With actuals loaded, toggle the history reference bar (Prior Month / 3-Month Avg / 6-Month Avg) and set this month's targets. The calculator auto-computes the gap to $550K.
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-icon">💡</div>
+  <div class="callout-text"><strong>Full automation path (later):</strong> Once the Google Sheet webhook is confirmed working and stable for 2–3 months, we can add a <code>IMPORTRANGE()</code> formula in the calculator that auto-pulls from PIF_Summary, and a Google Apps Script that also calls the Meta Ads API on a nightly schedule. At that point the calculator updates itself. That's a ~2 hour build and worth doing once the data is reliable.</div>
+</div>
+
+<div class="final-box">
+  <h3>Summary — Who Does What</h3>
+  <table class="fields-table" style="margin-top:10px;">
+    <thead><tr><th>Task</th><th>Owner</th><th>When</th><th>Time</th></tr></thead>
+    <tbody>
+      <tr><td>Create Google Sheet + paste Apps Script</td><td>Clementine</td><td>Once</td><td>15 min</td></tr>
+      <tr><td>Deploy as Web App, copy URL</td><td>Clementine</td><td>Once</td><td>5 min</td></tr>
+      <tr><td>Configure PIF Perfect webhook</td><td>Clementine + PIF support</td><td>Once</td><td>10 min</td></tr>
+      <tr><td>Install Meta MCP in Claude Desktop</td><td>Craig</td><td>Once</td><td>7 min</td></tr>
+      <tr><td>Pre-meeting data pull (PIF Summary)</td><td>Clementine or Kevin</td><td>Monthly, day before</td><td>5 min</td></tr>
+      <tr><td>Meta Ads pull at meeting start</td><td>Craig</td><td>Monthly, at meeting</td><td>2 min</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- /main -->
+</body>
+</html>

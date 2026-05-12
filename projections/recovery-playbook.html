@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IFCA × FCA Revenue Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #07101e;
+  --panel: #0d1929;
+  --panel2: #111f30;
+  --panel3: #162437;
+  --border: #1e3050;
+  --border2: #243a5a;
+  --text: #c8d8ea;
+  --muted: #4e6a88;
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.08);
+  --green-mid: rgba(16,185,129,0.18);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.08);
+  --amber-mid: rgba(245,158,11,0.18);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.08);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.08);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.08);
+  --white: #f0f6ff;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ─── HEADER ─── */
+.header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+}
+.header-left {}
+.header-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--white);
+  letter-spacing: -0.3px;
+}
+.header-title .x { color: var(--green); margin: 0 3px; }
+.header-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ─── VIEW TABS ─── */
+.view-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+.view-tab {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  padding: 5px 14px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.view-tab:hover { color: var(--text); }
+.view-tab.active {
+  background: var(--panel2);
+  color: var(--white);
+  font-weight: 600;
+  border: 1px solid var(--border2);
+}
+
+.scenarios {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.scenario-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  padding: 5px 11px;
+  border-radius: 5px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.scenario-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+.scenario-btn.active { border-color: var(--green); color: var(--green); background: var(--green-dim); font-weight: 600; }
+
+/* ─── VIEWS ─── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ─── MAIN LAYOUT (Calculator View) ─── */
+.main {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  height: calc(100vh - 65px);
+  overflow: hidden;
+}
+
+/* ─── INPUTS PANEL ─── */
+.inputs-panel {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 0 18px 24px;
+}
+.inputs-panel::-webkit-scrollbar { width: 3px; }
+.inputs-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 16px 0 9px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.section-label.g  { color: var(--green);  border-color: rgba(16,185,129,0.25); }
+.section-label.am { color: var(--amber);  border-color: rgba(245,158,11,0.25); }
+.section-label.p  { color: var(--purple); border-color: rgba(167,139,250,0.25); }
+.section-label.b  { color: var(--blue);   border-color: rgba(96,165,250,0.25); }
+.section-label.t  { color: var(--amber);  border-color: rgba(245,158,11,0.25); }
+
+.input-row { margin-bottom: 15px; }
+.input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 7px;
+}
+.input-label { font-size: 12.5px; color: var(--text); font-weight: 500; }
+.input-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  min-width: 70px;
+  text-align: right;
+}
+.input-hint {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1.5;
+}
+
+/* Sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border2);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--panel);
+  box-shadow: 0 0 0 2px var(--green);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type="range"]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--green); }
+input[type="range"].am::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--amber); }
+input[type="range"].p::-webkit-slider-thumb  { box-shadow: 0 0 0 2px var(--purple); }
+input[type="range"].b::-webkit-slider-thumb  { box-shadow: 0 0 0 2px var(--blue); }
+input[type="range"] {
+  background-image: linear-gradient(var(--green), var(--green));
+  background-size: var(--fill, 50%) 100%;
+  background-repeat: no-repeat;
+}
+input[type="range"].am { background-image: linear-gradient(var(--amber), var(--amber)); }
+input[type="range"].p  { background-image: linear-gradient(var(--purple), var(--purple)); }
+input[type="range"].b  { background-image: linear-gradient(var(--blue), var(--blue)); }
+
+/* ─── OUTPUTS PANEL ─── */
+.outputs-panel {
+  overflow-y: auto;
+  padding: 18px 22px 28px;
+  background: var(--bg);
+}
+.outputs-panel::-webkit-scrollbar { width: 3px; }
+.outputs-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.out-section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  margin-top: 6px;
+}
+
+/* ─── PIPELINE FLOW ─── */
+.pipeline-wrap {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 14px;
+}
+.pipe-step { flex: 1; text-align: center; }
+.pipe-num { font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 600; color: var(--white); line-height: 1; }
+.pipe-label { font-size: 9.5px; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; margin-top: 4px; }
+.pipe-rate { font-size: 11px; font-family: 'IBM Plex Mono', monospace; margin-top: 3px; }
+.pipe-arrow { color: var(--border2); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+
+/* ─── BREAKDOWN TABLE ─── */
+.bt-wrap { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+.bt-head { display: grid; grid-template-columns: 1.4fr 100px 100px 90px 80px; padding: 9px 16px; background: var(--panel3); border-bottom: 1px solid var(--border); font-size: 9.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); gap: 6px; }
+.bt-row { display: grid; grid-template-columns: 1.4fr 100px 100px 90px 80px; padding: 10px 16px; border-bottom: 1px solid rgba(30,48,80,0.5); align-items: center; gap: 6px; transition: background 0.1s; }
+.bt-row:hover { background: rgba(255,255,255,0.015); }
+.bt-row:last-child { border-bottom: none; }
+.bt-row.total { background: var(--panel3); border-top: 1px solid var(--border); font-weight: 600; }
+.bt-name { font-size: 12.5px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.bt-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.bt-num { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--white); text-align: right; }
+.bt-num.dim { color: var(--muted); }
+.bt-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-align: right; color: var(--muted); }
+.bt-bar-wrap { display: flex; align-items: center; }
+.bt-bar { height: 4px; border-radius: 2px; transition: width 0.35s ease; min-width: 2px; max-width: 70px; }
+
+/* ─── COMBINED CARDS ─── */
+.combined-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px; margin-bottom: 14px; }
+.c-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; position: relative; overflow: hidden; }
+.c-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--border2); }
+.c-card.ifca::after   { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+.c-card.fca::after    { background: linear-gradient(90deg, var(--amber), #f87171); }
+.c-card.combo::after  { background: linear-gradient(90deg, var(--green), #34d399); }
+.c-card.combo { border-color: rgba(16,185,129,0.3); background: var(--green-dim); }
+.c-label { font-size: 9.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.c-value { font-family: 'IBM Plex Mono', monospace; font-size: 30px; font-weight: 600; color: var(--white); letter-spacing: -1.5px; line-height: 1; }
+.c-card.combo .c-value { color: var(--green); font-size: 34px; }
+.c-sub { font-size: 10.5px; color: var(--muted); margin-top: 7px; font-family: 'IBM Plex Mono', monospace; line-height: 1.5; }
+.c-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; margin-top: 6px; }
+.c-badge.pos { background: var(--green-mid); color: var(--green); }
+.c-badge.neg { background: var(--red-dim); color: var(--red); }
+.c-badge.warn { background: var(--amber-dim); color: var(--amber); }
+
+/* ─── TARGET BAR ─── */
+.target-wrap { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+.target-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.target-ttl { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; color: var(--text); }
+.target-num { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; letter-spacing: -1px; }
+.prog-track { height: 7px; background: var(--border2); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.prog-fill { height: 100%; border-radius: 4px; transition: width 0.35s ease, background 0.35s ease; }
+.target-row { display: flex; justify-content: space-between; font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
+.target-milestones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.milestone { background: var(--panel3); border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px; text-align: center; }
+.ms-val { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: var(--white); }
+.ms-lbl { font-size: 10px; color: var(--muted); margin-top: 3px; font-family: 'IBM Plex Mono', monospace; }
+
+/* ─── ANNUAL VIEW ─── */
+.annual-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.a-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 14px 16px; }
+.a-label { font-size: 9.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+.a-val { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--white); letter-spacing: -0.8px; }
+.a-sub { font-size: 10px; color: var(--muted); margin-top: 5px; font-family: 'IBM Plex Mono', monospace; }
+
+/* ─── HISTORICAL CARDS ─── */
+.hist-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 14px; }
+.h-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 11px 12px; }
+.h-card.base { border-color: rgba(16,185,129,0.4); }
+.h-month { font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.h-card.base .h-month { color: var(--green); }
+.h-cash { font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: var(--white); }
+.h-stats { margin-top: 6px; font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); line-height: 1.7; }
+.h-stats span { color: var(--text); }
+
+/* ─── LEVER TABLE ─── */
+.lever-wrap { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+.lever-head { display: grid; grid-template-columns: 1.5fr 90px 90px 90px; padding: 9px 16px; background: var(--panel3); border-bottom: 1px solid var(--border); font-size: 9.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); gap: 6px; }
+.lever-row { display: grid; grid-template-columns: 1.5fr 90px 90px 90px; padding: 9px 16px; border-bottom: 1px solid rgba(30,48,80,0.4); align-items: center; gap: 6px; }
+.lever-row:last-child { border-bottom: none; }
+.lever-name { font-size: 12px; color: var(--text); }
+.lever-num { font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-align: right; color: var(--white); }
+.lever-delta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-align: right; font-weight: 600; }
+.lever-delta.pos { color: var(--green); }
+.lever-delta.neg { color: var(--red); }
+.lever-delta.zero { color: var(--muted); }
+.lever-owner { font-size: 10px; color: var(--muted); text-align: right; font-family: 'IBM Plex Mono', monospace; }
+
+/* ─── FOOTNOTE ─── */
+.footnote { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; padding-top: 8px; border-top: 1px solid var(--border); line-height: 1.7; }
+
+/* ══════════════════════════════════════════════════
+   PROJECTION ANALYSIS VIEW
+══════════════════════════════════════════════════ */
+.proj-view {
+  padding: 20px 28px 40px;
+  overflow-y: auto;
+  height: calc(100vh - 65px);
+}
+.proj-view::-webkit-scrollbar { width: 3px; }
+.proj-view::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.proj-section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.proj-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── Q1 MONTHLY GRID ─── */
+.q1-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.q1-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 15px;
+  position: relative;
+  overflow: hidden;
+}
+.q1-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.q1-card.jan::before  { background: linear-gradient(90deg, #4e6a88, #243a5a); }
+.q1-card.feb::before  { background: linear-gradient(90deg, #4e6a88, #243a5a); }
+.q1-card.mar::before  { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+.q1-card.apr::before  { background: linear-gradient(90deg, var(--amber), #f97316); }
+.q1-card.avg::before  { background: linear-gradient(90deg, var(--green), #34d399); }
+.q1-card.avg {
+  border-color: rgba(16,185,129,0.3);
+  background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(16,185,129,0.02));
+}
+.q1-card.apr {
+  border-color: rgba(245,158,11,0.3);
+  background: rgba(245,158,11,0.04);
+}
+
+.q1-month {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.q1-card.avg .q1-month { color: var(--green); }
+.q1-card.apr .q1-month { color: var(--amber); }
+
+.q1-gross {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.q1-card.avg .q1-gross { color: var(--green); }
+
+.q1-rows { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+.q1-row { display: flex; justify-content: space-between; font-size: 10px; font-family: 'IBM Plex Mono', monospace; }
+.q1-row-label { color: var(--muted); }
+.q1-row-val { color: var(--text); font-weight: 500; }
+.q1-row-val.hi { color: var(--white); }
+.q1-row-val.green { color: var(--green); }
+.q1-row-val.amber { color: var(--amber); }
+.q1-row-val.red   { color: var(--red); }
+
+/* Apr MTD note */
+.mtd-note {
+  display: inline-block;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.25);
+  color: var(--amber);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* ─── FORWARD PROJECTIONS ─── */
+.fwd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.fwd-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.fwd-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+}
+.fwd-month {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+.fwd-note {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.fwd-gross {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -1.5px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.fwd-vs-target {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+.fwd-vs-target.above { color: var(--green); }
+.fwd-vs-target.below { color: var(--red); }
+
+.fwd-rows { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
+.fwd-row { display: flex; justify-content: space-between; font-size: 10.5px; font-family: 'IBM Plex Mono', monospace; }
+.fwd-row-label { color: var(--muted); }
+.fwd-row-val { color: var(--text); }
+.fwd-row-val.hi { color: var(--white); }
+
+/* ─── SCENARIO CARDS ─── */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.sc-card {
+  border-radius: 12px;
+  padding: 20px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.sc-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.sc-card.worst {
+  background: rgba(248,113,113,0.05);
+  border: 1px solid rgba(248,113,113,0.2);
+}
+.sc-card.worst::before { background: linear-gradient(90deg, var(--red), #f97316); }
+.sc-card.conservative {
+  background: rgba(245,158,11,0.05);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+.sc-card.conservative::before { background: linear-gradient(90deg, var(--amber), #fcd34d); }
+.sc-card.best {
+  background: rgba(16,185,129,0.06);
+  border: 1px solid rgba(16,185,129,0.25);
+}
+.sc-card.best::before { background: linear-gradient(90deg, var(--green), #34d399); }
+
+.sc-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.sc-card.worst .sc-label        { color: var(--red); }
+.sc-card.conservative .sc-label { color: var(--amber); }
+.sc-card.best .sc-label         { color: var(--green); }
+
+.sc-rev {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.sc-card.worst .sc-rev        { color: var(--red); }
+.sc-card.conservative .sc-rev { color: var(--amber); }
+.sc-card.best .sc-rev         { color: var(--green); }
+
+.sc-vs {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  margin-bottom: 14px;
+}
+.sc-card.worst .sc-vs        { color: rgba(248,113,113,0.7); }
+.sc-card.conservative .sc-vs { color: rgba(245,158,11,0.7); }
+.sc-card.best .sc-vs         { color: rgba(16,185,129,0.7); }
+
+/* Target progress bar in scenario card */
+.sc-prog-wrap { margin-bottom: 14px; }
+.sc-prog-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.sc-prog-track {
+  height: 5px;
+  background: var(--border2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.sc-prog-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+.sc-card.worst .sc-prog-fill        { background: var(--red); }
+.sc-card.conservative .sc-prog-fill { background: var(--amber); }
+.sc-card.best .sc-prog-fill         { background: var(--green); }
+
+.sc-rows { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; }
+.sc-row { display: flex; justify-content: space-between; font-size: 10.5px; font-family: 'IBM Plex Mono', monospace; }
+.sc-row-label { color: var(--muted); }
+.sc-row-val { color: var(--text); }
+.sc-row-val.hi { color: var(--white); font-weight: 600; }
+
+.sc-desc {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1.6;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ─── 550K LOOKBACK BAR ─── */
+.lookback-wrap {
+  background: var(--panel2);
+  border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.lookback-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--green), #34d399, var(--blue));
+}
+.lookback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.lookback-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--white);
+}
+.lookback-subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.lookback-target {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: -1.5px;
+  text-align: right;
+}
+.lookback-target-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 2px;
+}
+
+.lookback-months {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.lb-mo {
+  background: var(--panel3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 10px;
+  text-align: center;
+}
+.lb-mo.hit {
+  background: var(--green-dim);
+  border-color: rgba(16,185,129,0.3);
+}
+.lb-mo.miss {
+  background: var(--red-dim);
+  border-color: rgba(248,113,113,0.25);
+}
+.lb-mo.proj {
+  background: rgba(96,165,250,0.06);
+  border-color: rgba(96,165,250,0.25);
+  border-style: dashed;
+}
+.lb-mo-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.lb-mo.hit .lb-mo-name  { color: var(--green); }
+.lb-mo.miss .lb-mo-name { color: var(--red); }
+.lb-mo.proj .lb-mo-name { color: var(--blue); }
+.lb-mo-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+}
+.lb-mo-status {
+  font-size: 10px;
+  margin-top: 3px;
+}
+.lb-mo.hit .lb-mo-status  { color: var(--green); }
+.lb-mo.miss .lb-mo-status { color: var(--red); }
+.lb-mo.proj .lb-mo-status { color: var(--blue); }
+
+.lookback-note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.6;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- ──────────────────── HEADER ──────────────────── -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">IFCA<span class="x"> × </span>FCA Revenue Dashboard</div>
+    <div class="header-sub" id="header-sub-text">IFCA-only post-close model · Apr 2026 actuals baseline</div>
+  </div>
+  <div class="header-right">
+    <!-- View Tabs -->
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('calculator', this)">⚙ Calculator</button>
+      <button class="view-tab" onclick="switchView('projections', this)">📊 Projections</button>
+    </div>
+    <!-- Scenario buttons (calculator only) -->
+    <div class="scenarios" id="scenario-btns">
+      <button class="scenario-btn active" onclick="setScenario('current', this)">📍 Current Actual</button>
+      <button class="scenario-btn" onclick="setScenario('conservative', this)">Conservative</button>
+      <button class="scenario-btn" onclick="setScenario('recovery', this)">90-Day Recovery</button>
+      <button class="scenario-btn" onclick="setScenario('optimistic', this)">Optimistic</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     VIEW 1: CALCULATOR
+══════════════════════════════════ -->
+<div class="view active" id="view-calculator">
+  <div class="main">
+
+    <!-- INPUTS PANEL -->
+    <div class="inputs-panel">
+      <div class="section-label g">⟳ Sales Pipeline</div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">Approved Booked Calls / Mo</span>
+          <span class="input-value" id="val-booked">95</span>
+        </div>
+        <input type="range" id="sl-booked" min="50" max="450" step="5" value="95" oninput="updateFill(this,50,450); update()">
+        <div class="input-hint">Apr '26 actual: 95 · Target: 115–130 setter + 70 inbound = 200+ · 2025 avg: 202</div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">Show Rate</span>
+          <span class="input-value" id="val-show">73.5%</span>
+        </div>
+        <input type="range" id="sl-show" min="0.40" max="0.95" step="0.005" value="0.735" oninput="updateFill(this,0.40,0.95); update()">
+        <div class="input-hint">Mar '26 actual: 73.5% · 2025 avg: 64.9% · Target: 75–80%</div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">Close Rate (on Live Calls)</span>
+          <span class="input-value" id="val-close">21.9%</span>
+        </div>
+        <input type="range" id="sl-close" min="0.10" max="0.45" step="0.005" value="0.219" oninput="updateFill(this,0.10,0.45); update()">
+        <div class="input-hint">Apr '26: 15.1% (lowest 2026) · Mar '26: 21.9% · Target: 25% · #1 leverage lever</div>
+      </div>
+
+      <div class="section-label am">$ Front-End Economics</div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">AOV (Contract Value)</span>
+          <span class="input-value" id="val-aov">$12,000</span>
+        </div>
+        <input type="range" class="am" id="sl-aov" min="8500" max="20000" step="500" value="12000" oninput="updateFill(this,8500,20000); update()">
+        <div class="input-hint">IFCA Accelerator: $12,000 · Post-unification premium pricing possible</div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">FE Cash Collection Rate</span>
+          <span class="input-value" id="val-fecr">54.0%</span>
+        </div>
+        <input type="range" class="am" id="sl-fecr" min="0.35" max="0.78" step="0.005" value="0.54" oninput="updateFill(this,0.35,0.78); update()">
+        <div class="input-hint">2025 avg: 53.1% · IFCA PIF rate: 39.6% vs 50%+ industry benchmark</div>
+      </div>
+
+      <div class="section-label p">↑ Back-End / Upsell (Cory)</div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">BE Upsell Rate (of Active FE)</span>
+          <span class="input-value" id="val-beur">9.0%</span>
+        </div>
+        <input type="range" class="p" id="sl-beur" min="0.05" max="0.50" step="0.005" value="0.09" oninput="updateFill(this,0.05,0.50); update()">
+        <div class="input-hint">Current actual: ~8.9% (10 closes / 112 active FE) · Target: 25–30% · Cory unlock is the lever</div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">BE Avg Contract Value</span>
+          <span class="input-value" id="val-beaov">$14,000</span>
+        </div>
+        <input type="range" class="p" id="sl-beaov" min="12000" max="50000" step="1000" value="14000" oninput="updateFill(this,12000,50000); update()">
+        <div class="input-hint">2025 actual avg: $14,240 · Legacy Path: $22–25K · 7-Fig CEO: $30–35K</div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">BE Collection Rate</span>
+          <span class="input-value" id="val-becr">45.0%</span>
+        </div>
+        <input type="range" class="p" id="sl-becr" min="0.20" max="0.70" step="0.005" value="0.45" oninput="updateFill(this,0.20,0.70); update()">
+        <div class="input-hint">Legacy ~45% same-period · 7-Fig/High Level ~30–35% upfront</div>
+      </div>
+
+      <div class="section-label b">~ Recurring & AR Installments</div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">GHL MRR / Subscriptions</span>
+          <span class="input-value" id="val-mrr">$27,900</span>
+        </div>
+        <input type="range" class="b" id="sl-mrr" min="20000" max="100000" step="1000" value="27900" oninput="updateFill(this,20000,100000); update()">
+        <div class="input-hint">GHL actual avg: $27,900 · 450+ subscribers @ $97/mo · Sep '25 peak: $34K</div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">Subscriptions + AR Installments</span>
+          <span class="input-value" id="val-ar">$50,000</span>
+        </div>
+        <input type="range" class="b" id="sl-ar" min="20000" max="250000" step="1000" value="50000" oninput="updateFill(this,20000,250000); update()">
+        <div class="input-hint">Actual: ~$50K (Continuity ~$22K + Trainerize ~$28K) · grows with active client base</div>
+      </div>
+
+      <div class="section-label t">⊕ FCA — Taeler's Business</div>
+
+      <div class="input-row">
+        <div class="input-header">
+          <span class="input-label">FCA Monthly Cash (Taeler)</span>
+          <span class="input-value" id="val-fca">$0</span>
+        </div>
+        <input type="range" class="am" id="sl-fca" min="0" max="450000" step="5000" value="0" oninput="updateFill(this,0,450000); update()">
+        <div class="input-hint">Post-close: FCA stop-sell June · set to 0 for IFCA-only Lookback · adjust to model blended</div>
+      </div>
+    </div>
+
+    <!-- OUTPUTS PANEL -->
+    <div class="outputs-panel">
+
+      <div class="out-section-title">Monthly Sales Pipeline Flow</div>
+      <div class="pipeline-wrap">
+        <div class="pipe-step">
+          <div class="pipe-num" id="o-booked">95</div>
+          <div class="pipe-label">Booked Calls</div>
+          <div class="pipe-rate" style="color:var(--blue)">approved</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-num" id="o-live">70</div>
+          <div class="pipe-label">Live Calls</div>
+          <div class="pipe-rate" id="o-showlabel" style="color:var(--amber)">73.5% show</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-num" id="o-fecl">15</div>
+          <div class="pipe-label">FE Closes</div>
+          <div class="pipe-rate" id="o-closelabel" style="color:var(--green)">21.9% close</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-num" id="o-becl">1</div>
+          <div class="pipe-label">BE Closes</div>
+          <div class="pipe-rate" id="o-belabel" style="color:var(--purple)">9.0% upsell</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-num" id="o-revgen">$196K</div>
+          <div class="pipe-label">Total Rev Gen</div>
+          <div class="pipe-rate" id="o-aovlabel" style="color:var(--muted)">$12K AOV</div>
+        </div>
+      </div>
+
+      <div class="out-section-title">Revenue Streams — Monthly Cash</div>
+      <div class="bt-wrap">
+        <div class="bt-head">
+          <div>Stream</div>
+          <div style="text-align:right">Rev Generated</div>
+          <div style="text-align:right">Cash Collected</div>
+          <div style="text-align:right">% of IFCA</div>
+          <div></div>
+        </div>
+        <div class="bt-row">
+          <div class="bt-name"><span class="bt-dot" style="background:var(--green)"></span>Front-End Sales</div>
+          <div class="bt-num" id="bt-fegen">—</div>
+          <div class="bt-num" id="bt-fecash">—</div>
+          <div class="bt-pct" id="bt-fepct">—</div>
+          <div class="bt-bar-wrap"><div class="bt-bar" id="bt-febar" style="background:var(--green); width:0px"></div></div>
+        </div>
+        <div class="bt-row">
+          <div class="bt-name"><span class="bt-dot" style="background:var(--purple)"></span>Back-End / Upsell</div>
+          <div class="bt-num" id="bt-begen">—</div>
+          <div class="bt-num" id="bt-becash">—</div>
+          <div class="bt-pct" id="bt-bepct">—</div>
+          <div class="bt-bar-wrap"><div class="bt-bar" id="bt-bebar" style="background:var(--purple); width:0px"></div></div>
+        </div>
+        <div class="bt-row">
+          <div class="bt-name"><span class="bt-dot" style="background:var(--blue)"></span>GHL MRR / Subscriptions</div>
+          <div class="bt-num dim">—</div>
+          <div class="bt-num" id="bt-mrrcash">—</div>
+          <div class="bt-pct" id="bt-mrrpct">—</div>
+          <div class="bt-bar-wrap"><div class="bt-bar" id="bt-mrrbar" style="background:var(--blue); width:0px"></div></div>
+        </div>
+        <div class="bt-row">
+          <div class="bt-name"><span class="bt-dot" style="background:var(--amber)"></span>Subscriptions + AR Installments</div>
+          <div class="bt-num dim">—</div>
+          <div class="bt-num" id="bt-arcash">—</div>
+          <div class="bt-pct" id="bt-arpct">—</div>
+          <div class="bt-bar-wrap"><div class="bt-bar" id="bt-arbar" style="background:var(--amber); width:0px"></div></div>
+        </div>
+        <div class="bt-row total">
+          <div class="bt-name" style="font-weight:700;color:var(--white)">IFCA Total (Monthly)</div>
+          <div class="bt-num" id="bt-totgen">—</div>
+          <div class="bt-num" id="bt-totcash" style="color:var(--green)">—</div>
+          <div class="bt-pct" style="color:var(--green)">100%</div>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="out-section-title">Combined Entity View</div>
+      <div class="combined-grid">
+        <div class="c-card ifca">
+          <div class="c-label">IFCA Monthly Cash</div>
+          <div class="c-value" id="c-ifca">—</div>
+          <div class="c-sub" id="c-ifcasub">Apr '26 actuals baseline</div>
+          <div class="c-badge warn" id="c-ifcabadge">—</div>
+        </div>
+        <div class="c-card fca">
+          <div class="c-label">FCA Monthly (Taeler)</div>
+          <div class="c-value" id="c-fca">$0</div>
+          <div class="c-sub">FCA stop-sell June<br>Set slider to model contribution</div>
+        </div>
+        <div class="c-card combo">
+          <div class="c-label">Combined Monthly Cash</div>
+          <div class="c-value" id="c-combo">—</div>
+          <div class="c-sub" id="c-combosub">Gap to $833K/mo ($10M/yr target)</div>
+          <div class="c-badge warn" id="c-combobadge">—</div>
+        </div>
+      </div>
+
+      <div class="target-wrap">
+        <div class="target-top">
+          <div class="target-ttl">120-Day Lookback — $550K IFCA Monthly Target</div>
+          <div class="target-num" id="tgt-pct" style="color:var(--amber)">—%</div>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="tgt-bar" style="width:0%;background:var(--amber)"></div>
+        </div>
+        <div class="target-row">
+          <span>$0</span>
+          <span id="tgt-lbl" style="color:var(--text)">calculating...</span>
+          <span style="color:var(--green)">$550K Lookback Target</span>
+        </div>
+        <div class="target-milestones">
+          <div class="milestone">
+            <div class="ms-val" id="ms-ifca-mo">—</div>
+            <div class="ms-lbl">IFCA / Mo</div>
+          </div>
+          <div class="milestone">
+            <div class="ms-val" id="ms-550gap">—</div>
+            <div class="ms-lbl">Gap to $550K</div>
+          </div>
+          <div class="milestone">
+            <div class="ms-val" id="ms-combo-mo">—</div>
+            <div class="ms-lbl">Combined / Mo</div>
+          </div>
+          <div class="milestone">
+            <div class="ms-val" id="ms-10m-gap">—</div>
+            <div class="ms-lbl">vs $10M/yr</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="out-section-title">Annual Projection</div>
+      <div class="annual-grid">
+        <div class="a-card">
+          <div class="a-label">IFCA Annual Cash</div>
+          <div class="a-val" id="ann-ifca">—</div>
+          <div class="a-sub">IFCA-only × 12 months</div>
+        </div>
+        <div class="a-card">
+          <div class="a-label">FCA Annual Cash</div>
+          <div class="a-val" id="ann-fca">—</div>
+          <div class="a-sub" id="ann-fcasub">FCA × 12 months</div>
+        </div>
+        <div class="a-card" style="border-color:rgba(16,185,129,0.25);background:var(--green-dim)">
+          <div class="a-label">Combined Annual</div>
+          <div class="a-val" id="ann-combo" style="color:var(--green)">—</div>
+          <div class="a-sub" id="ann-gap">Gap: calculating...</div>
+        </div>
+      </div>
+
+      <div class="out-section-title">Lever Impact vs. Apr '26 Baseline</div>
+      <div class="lever-wrap">
+        <div class="lever-head">
+          <div>Lever</div>
+          <div style="text-align:right">Baseline/Mo</div>
+          <div style="text-align:right">Current/Mo</div>
+          <div style="text-align:right">Owner</div>
+        </div>
+        <div class="lever-row">
+          <div class="lever-name">Close Rate (Pipeline)</div>
+          <div class="lever-num">$54K FE</div>
+          <div class="lever-delta" id="lv-close">—</div>
+          <div class="lever-owner">Erin → Taeler</div>
+        </div>
+        <div class="lever-row">
+          <div class="lever-name">Booked Call Volume</div>
+          <div class="lever-num">95 calls</div>
+          <div class="lever-delta" id="lv-calls">—</div>
+          <div class="lever-owner">Tom / Setters / Janie</div>
+        </div>
+        <div class="lever-row">
+          <div class="lever-name">BE Upsell System</div>
+          <div class="lever-num">$5.7K BE</div>
+          <div class="lever-delta" id="lv-be">—</div>
+          <div class="lever-owner">Cory</div>
+        </div>
+        <div class="lever-row">
+          <div class="lever-name">GHL MRR Retention</div>
+          <div class="lever-num">$27.9K</div>
+          <div class="lever-delta" id="lv-mrr">—</div>
+          <div class="lever-owner">Kevin / SC Team</div>
+        </div>
+        <div class="lever-row" style="background:var(--panel3);border-top:1px solid var(--border)">
+          <div class="lever-name" style="font-weight:600;color:var(--white)">Total IFCA Delta vs Baseline</div>
+          <div class="lever-num">$156K</div>
+          <div class="lever-delta" id="lv-total">—</div>
+          <div class="lever-owner" style="color:var(--green)">Combined</div>
+        </div>
+      </div>
+
+      <div class="out-section-title">Historical Baseline — IFCA Gross Collected</div>
+      <div class="hist-grid">
+        <div class="h-card">
+          <div class="h-month">Jan '26</div>
+          <div class="h-cash">$452K</div>
+          <div class="h-stats">Booked: <span>179</span><br>Live: <span>120</span><br>CR: <span>19.2%</span><br>BE: <span>7 deals</span></div>
+        </div>
+        <div class="h-card">
+          <div class="h-month">Feb '26</div>
+          <div class="h-cash">$412K</div>
+          <div class="h-stats">Booked: <span>153</span><br>Live: <span>98</span><br>CR: <span>23.5%</span><br>BE: <span>6 deals</span></div>
+        </div>
+        <div class="h-card base">
+          <div class="h-month">Mar '26</div>
+          <div class="h-cash">$446K</div>
+          <div class="h-stats">Booked: <span>155</span><br>Live: <span>114</span><br>CR: <span>21.9%</span><br>BE: <span>6 deals</span></div>
+        </div>
+        <div class="h-card">
+          <div class="h-month">Apr '26 MTD</div>
+          <div class="h-cash">$352K</div>
+          <div class="h-stats">Booked: <span>176</span><br>Live: <span>93</span><br>CR: <span>15.1%</span><br>BE: <span>6 deals</span></div>
+        </div>
+        <div class="h-card" style="border-color:rgba(16,185,129,0.2)">
+          <div class="h-month" style="color:var(--green)">550K Target</div>
+          <div class="h-cash" style="color:var(--green)">$550K</div>
+          <div class="h-stats">Booked: <span>200+</span><br>Live: <span>150+</span><br>CR: <span>25%+</span><br>BE: <span>12+ deals</span></div>
+        </div>
+      </div>
+
+      <div class="footnote">
+        Sources: Monthly Projection Template (updated 4/28/26) · 2025–2026 COMBINED Sales Dashboard FE &amp; BE · 2025–2026 SC Backend Upsell Tracker · P&amp;L TTM<br>
+        Model: Booked × Show = Live → × Close = FE Closes → × AOV × Coll Rate = FE Cash · FE Closes × BE Rate × BE AOV × BE CR = BE Cash · IFCA = FE + BE + MRR + AR<br>
+        Baseline (Apr '26 actuals): 95 booked · 93 live · 15.1% CR (lowest 2026) · $352K MTD pace · CPL: $79.98 (vs $38 target) · Close rate diagnosis critical before May launch
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     VIEW 2: PROJECTION ANALYSIS
+══════════════════════════════════ -->
+<div class="view" id="view-projections">
+  <div class="proj-view">
+
+    <!-- 550K LOOKBACK TARGET TRACKER -->
+    <div class="proj-section-title">120-Day Lookback — $550K IFCA Revenue Target</div>
+    <div class="lookback-wrap">
+      <div class="lookback-header">
+        <div>
+          <div class="lookback-title">Protect the $4.8M Seller Note</div>
+          <div class="lookback-subtitle">Need 2 consecutive months ≥ $550K IFCA-only to avoid purchase price reduction</div>
+        </div>
+        <div>
+          <div class="lookback-target">$550K</div>
+          <div class="lookback-target-sub">monthly threshold · 2 consecutive months required</div>
+        </div>
+      </div>
+      <div class="lookback-months">
+        <div class="lb-mo miss">
+          <div class="lb-mo-name">Jan '26</div>
+          <div class="lb-mo-val">$452K</div>
+          <div class="lb-mo-status">−$98K</div>
+        </div>
+        <div class="lb-mo miss">
+          <div class="lb-mo-name">Feb '26</div>
+          <div class="lb-mo-val">$412K</div>
+          <div class="lb-mo-status">−$138K</div>
+        </div>
+        <div class="lb-mo miss">
+          <div class="lb-mo-name">Mar '26</div>
+          <div class="lb-mo-val">$446K</div>
+          <div class="lb-mo-status">−$104K</div>
+        </div>
+        <div class="lb-mo miss">
+          <div class="lb-mo-name">Apr '26 ⚠</div>
+          <div class="lb-mo-val">~$377K</div>
+          <div class="lb-mo-status">−$173K pace</div>
+        </div>
+        <div class="lb-mo proj">
+          <div class="lb-mo-name">May '26 →</div>
+          <div class="lb-mo-val">$515K</div>
+          <div class="lb-mo-status">projected</div>
+        </div>
+        <div class="lb-mo proj">
+          <div class="lb-mo-name">Jun '26 →</div>
+          <div class="lb-mo-val">$613K</div>
+          <div class="lb-mo-status">↑ target hit</div>
+        </div>
+      </div>
+      <div class="lookback-note">
+        ⚡ April close rate (15.1%) is the single most urgent pre-May diagnostic. CPL jumped from $46 (Feb) → $80 (Apr) — creative fatigue confirmed. 
+        VSL refilm (Apr 30–May 3) and Janie onboarding are the two highest-leverage actions in the next 14 days. 
+        Conservative scenario hits $548K — essentially a knife's edge requiring close rate recovery to 23%, booked calls to 220, and BE to 12 deals/mo.
+      </div>
+    </div>
+
+    <!-- Q1 MONTHLY ACTUALS -->
+    <div class="proj-section-title">Q1 2026 — Monthly Actuals + April MTD</div>
+    <div class="q1-grid">
+
+      <div class="q1-card jan">
+        <div class="q1-month">January 2026</div>
+        <div class="q1-gross">$452K</div>
+        <div class="q1-rows">
+          <div class="q1-row"><span class="q1-row-label">MRR</span><span class="q1-row-val">$97.2K</span></div>
+          <div class="q1-row"><span class="q1-row-label">AR</span><span class="q1-row-val">$156.8K</span></div>
+          <div class="q1-row"><span class="q1-row-label">FE Cash</span><span class="q1-row-val">$132.8K</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Cash</span><span class="q1-row-val">$65.0K</span></div>
+          <div class="q1-row"><span class="q1-row-label">Booked</span><span class="q1-row-val hi">179</span></div>
+          <div class="q1-row"><span class="q1-row-label">Live</span><span class="q1-row-val">120</span></div>
+          <div class="q1-row"><span class="q1-row-label">Close Rate</span><span class="q1-row-val amber">19.2%</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Deals</span><span class="q1-row-val">7</span></div>
+          <div class="q1-row"><span class="q1-row-label">Ad Spend</span><span class="q1-row-val">$105.2K</span></div>
+          <div class="q1-row"><span class="q1-row-label">CPL</span><span class="q1-row-val green">$41.88</span></div>
+        </div>
+      </div>
+
+      <div class="q1-card feb">
+        <div class="q1-month">February 2026</div>
+        <div class="q1-gross">$412K</div>
+        <div class="q1-rows">
+          <div class="q1-row"><span class="q1-row-label">MRR</span><span class="q1-row-val">$87.1K</span></div>
+          <div class="q1-row"><span class="q1-row-label">AR</span><span class="q1-row-val">$137.4K</span></div>
+          <div class="q1-row"><span class="q1-row-label">FE Cash</span><span class="q1-row-val">$131.8K</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Cash</span><span class="q1-row-val">$55.3K</span></div>
+          <div class="q1-row"><span class="q1-row-label">Booked</span><span class="q1-row-val hi">153</span></div>
+          <div class="q1-row"><span class="q1-row-label">Live</span><span class="q1-row-val">98</span></div>
+          <div class="q1-row"><span class="q1-row-label">Close Rate</span><span class="q1-row-val amber">23.5%</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Deals</span><span class="q1-row-val">6</span></div>
+          <div class="q1-row"><span class="q1-row-label">Ad Spend</span><span class="q1-row-val">$83.3K</span></div>
+          <div class="q1-row"><span class="q1-row-label">CPL</span><span class="q1-row-val green">$46.30</span></div>
+        </div>
+      </div>
+
+      <div class="q1-card mar">
+        <div class="q1-month">March 2026</div>
+        <div class="q1-gross">$446K</div>
+        <div class="q1-rows">
+          <div class="q1-row"><span class="q1-row-label">MRR</span><span class="q1-row-val">$92.8K</span></div>
+          <div class="q1-row"><span class="q1-row-label">AR</span><span class="q1-row-val">$149.1K</span></div>
+          <div class="q1-row"><span class="q1-row-label">FE Cash</span><span class="q1-row-val">$140.3K</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Cash</span><span class="q1-row-val">$64.0K</span></div>
+          <div class="q1-row"><span class="q1-row-label">Booked</span><span class="q1-row-val hi">155</span></div>
+          <div class="q1-row"><span class="q1-row-label">Live</span><span class="q1-row-val">114</span></div>
+          <div class="q1-row"><span class="q1-row-label">Close Rate</span><span class="q1-row-val amber">21.9%</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Deals</span><span class="q1-row-val">6</span></div>
+          <div class="q1-row"><span class="q1-row-label">Ad Spend</span><span class="q1-row-val">$87.5K</span></div>
+          <div class="q1-row"><span class="q1-row-label">CPL</span><span class="q1-row-val amber">$66.82</span></div>
+        </div>
+      </div>
+
+      <div class="q1-card apr">
+        <div class="q1-month">April 2026 ⚠</div>
+        <div class="q1-gross">~$377K <span class="mtd-note">MTD PACE</span></div>
+        <div class="q1-rows">
+          <div class="q1-row"><span class="q1-row-label">MRR</span><span class="q1-row-val">$88.6K</span></div>
+          <div class="q1-row"><span class="q1-row-label">AR</span><span class="q1-row-val">$178.9K</span></div>
+          <div class="q1-row"><span class="q1-row-label">FE Cash (MTD)</span><span class="q1-row-val red">$68.2K</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Cash (MTD)</span><span class="q1-row-val red">$16.3K</span></div>
+          <div class="q1-row"><span class="q1-row-label">Booked</span><span class="q1-row-val hi">176</span></div>
+          <div class="q1-row"><span class="q1-row-label">Live</span><span class="q1-row-val">93</span></div>
+          <div class="q1-row"><span class="q1-row-label">Close Rate</span><span class="q1-row-val red">15.1% ⚠</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Deals</span><span class="q1-row-val">6</span></div>
+          <div class="q1-row"><span class="q1-row-label">Ad Spend</span><span class="q1-row-val">$78.6K</span></div>
+          <div class="q1-row"><span class="q1-row-label">CPL</span><span class="q1-row-val red">$79.98 ⚠</span></div>
+        </div>
+      </div>
+
+      <div class="q1-card avg">
+        <div class="q1-month">Q1 Average</div>
+        <div class="q1-gross">$437K</div>
+        <div class="q1-rows">
+          <div class="q1-row"><span class="q1-row-label">MRR avg</span><span class="q1-row-val green">$92.4K</span></div>
+          <div class="q1-row"><span class="q1-row-label">AR avg</span><span class="q1-row-val green">$147.8K</span></div>
+          <div class="q1-row"><span class="q1-row-label">FE Cash avg</span><span class="q1-row-val">$134.9K</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Cash avg</span><span class="q1-row-val">$61.4K</span></div>
+          <div class="q1-row"><span class="q1-row-label">Booked avg</span><span class="q1-row-val hi">162</span></div>
+          <div class="q1-row"><span class="q1-row-label">Live avg</span><span class="q1-row-val">111</span></div>
+          <div class="q1-row"><span class="q1-row-label">Close Rate avg</span><span class="q1-row-val amber">21.5%</span></div>
+          <div class="q1-row"><span class="q1-row-label">BE Deals avg</span><span class="q1-row-val">6.3</span></div>
+          <div class="q1-row"><span class="q1-row-label">Ad Spend avg</span><span class="q1-row-val">$92.0K</span></div>
+          <div class="q1-row"><span class="q1-row-label">CPL avg</span><span class="q1-row-val">$51.67</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MAY / JUN / JUL PROJECTIONS -->
+    <div class="proj-section-title">Forward Projections — May / June / July 2026</div>
+    <div class="fwd-grid">
+
+      <div class="fwd-card">
+        <div class="fwd-month">May 2026</div>
+        <div class="fwd-note">TOT launch May 18 · VSL refilm live · Janie onboarding · Setters ramping · Webinar setup begins</div>
+        <div class="fwd-gross">$515K</div>
+        <div class="fwd-vs-target below">−$35K vs $550K target</div>
+        <div class="fwd-rows">
+          <div class="fwd-row"><span class="fwd-row-label">MRR</span><span class="fwd-row-val">$96K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">AR</span><span class="fwd-row-val">$185K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">FE Collected</span><span class="fwd-row-val hi">$154K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">BE Collected</span><span class="fwd-row-val">$80K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Booked Calls</span><span class="fwd-row-val">220</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Close Rate</span><span class="fwd-row-val">22%</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">BE Deals</span><span class="fwd-row-val">10</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Ad Spend</span><span class="fwd-row-val">$95K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">CPL target</span><span class="fwd-row-val">$68</span></div>
+        </div>
+      </div>
+
+      <div class="fwd-card" style="border-color:rgba(16,185,129,0.25);">
+        <div class="fwd-month" style="color:var(--green)">June 2026</div>
+        <div class="fwd-note">Joint masterclass June 11 · Janie fully onboarded · Scholarship/Grant ads begin Jun 17 · FCA fully dissolved</div>
+        <div class="fwd-gross" style="color:var(--green)">$613K</div>
+        <div class="fwd-vs-target above">+$63K vs $550K target ✓</div>
+        <div class="fwd-rows">
+          <div class="fwd-row"><span class="fwd-row-label">MRR</span><span class="fwd-row-val">$101K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">AR</span><span class="fwd-row-val">$205K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">FE Collected</span><span class="fwd-row-val hi">$198K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">BE Collected</span><span class="fwd-row-val">$109K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Booked Calls</span><span class="fwd-row-val">250</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Close Rate</span><span class="fwd-row-val">24%</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">BE Deals</span><span class="fwd-row-val">13</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Ad Spend</span><span class="fwd-row-val">$100K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">CPL target</span><span class="fwd-row-val">$63</span></div>
+        </div>
+      </div>
+
+      <div class="fwd-card" style="border-color:rgba(16,185,129,0.3);">
+        <div class="fwd-month" style="color:var(--green)">July 2026</div>
+        <div class="fwd-note">Scholarship/Impact Fund full deployment · Full Taeler integration · Cory BE system optimized · Run rate established</div>
+        <div class="fwd-gross" style="color:var(--green)">$721K</div>
+        <div class="fwd-vs-target above">+$171K vs $550K target ✓</div>
+        <div class="fwd-rows">
+          <div class="fwd-row"><span class="fwd-row-label">MRR</span><span class="fwd-row-val">$107K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">AR</span><span class="fwd-row-val">$225K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">FE Collected</span><span class="fwd-row-val hi">$249K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">BE Collected</span><span class="fwd-row-val">$140K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Booked Calls</span><span class="fwd-row-val">280</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Close Rate</span><span class="fwd-row-val">26%</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">BE Deals</span><span class="fwd-row-val">16</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">Ad Spend</span><span class="fwd-row-val">$105K</span></div>
+          <div class="fwd-row"><span class="fwd-row-label">CPL target</span><span class="fwd-row-val">$58</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 90-DAY SCENARIOS -->
+    <div class="proj-section-title">90-Day Recovery Scenarios — May–July Avg</div>
+    <div class="scenario-grid">
+
+      <div class="sc-card worst">
+        <div class="sc-label">⚠ Worst Case</div>
+        <div class="sc-rev">$394K</div>
+        <div class="sc-vs">−$156K vs $550K target</div>
+        <div class="sc-prog-wrap">
+          <div class="sc-prog-label">
+            <span>$0</span>
+            <span>71.7% of target</span>
+            <span>$550K</span>
+          </div>
+          <div class="sc-prog-track">
+            <div class="sc-prog-fill" style="width:71.7%"></div>
+          </div>
+        </div>
+        <div class="sc-rows">
+          <div class="sc-row"><span class="sc-row-label">Booked Calls / mo</span><span class="sc-row-val hi">170</span></div>
+          <div class="sc-row"><span class="sc-row-label">Close Rate</span><span class="sc-row-val hi">19%</span></div>
+          <div class="sc-row"><span class="sc-row-label">BE Deals / mo</span><span class="sc-row-val hi">8</span></div>
+          <div class="sc-row"><span class="sc-row-label">FE Collected</span><span class="sc-row-val">$94K</span></div>
+          <div class="sc-row"><span class="sc-row-label">BE Collected</span><span class="sc-row-val">$25K</span></div>
+          <div class="sc-row"><span class="sc-row-label">MRR</span><span class="sc-row-val">$90K</span></div>
+          <div class="sc-row"><span class="sc-row-label">AR</span><span class="sc-row-val">$165K</span></div>
+          <div class="sc-row"><span class="sc-row-label">Ad Spend</span><span class="sc-row-val">$90K</span></div>
+        </div>
+        <div class="sc-desc">Current constraints persist. No close rate recovery. Setter volume stagnant. Cory BE pipeline unchanged. April trajectory extrapolated forward. Seller Note reduction trigger.</div>
+      </div>
+
+      <div class="sc-card conservative">
+        <div class="sc-label">~ Conservative</div>
+        <div class="sc-rev">$548K</div>
+        <div class="sc-vs">−$1.6K vs $550K — knife's edge</div>
+        <div class="sc-prog-wrap">
+          <div class="sc-prog-label">
+            <span>$0</span>
+            <span>99.7% of target</span>
+            <span>$550K</span>
+          </div>
+          <div class="sc-prog-track">
+            <div class="sc-prog-fill" style="width:99.7%"></div>
+          </div>
+        </div>
+        <div class="sc-rows">
+          <div class="sc-row"><span class="sc-row-label">Booked Calls / mo</span><span class="sc-row-val hi">220</span></div>
+          <div class="sc-row"><span class="sc-row-label">Close Rate</span><span class="sc-row-val hi">23%</span></div>
+          <div class="sc-row"><span class="sc-row-label">BE Deals / mo</span><span class="sc-row-val hi">12</span></div>
+          <div class="sc-row"><span class="sc-row-label">FE Collected</span><span class="sc-row-val">$151K</span></div>
+          <div class="sc-row"><span class="sc-row-label">BE Collected</span><span class="sc-row-val">$53K</span></div>
+          <div class="sc-row"><span class="sc-row-label">MRR</span><span class="sc-row-val">$97K</span></div>
+          <div class="sc-row"><span class="sc-row-label">AR</span><span class="sc-row-val">$192K</span></div>
+          <div class="sc-row"><span class="sc-row-label">Ad Spend</span><span class="sc-row-val">$98K</span></div>
+        </div>
+        <div class="sc-desc">Minimum viable recovery. Close rate to 23% (vs 15% Apr). Booked calls to 220 (setter ramp + Janie). BE at 12/mo (early Cory unlock). Three levers, all moving. Nearly hits target alone.</div>
+      </div>
+
+      <div class="sc-card best">
+        <div class="sc-label">✓ Best Case</div>
+        <div class="sc-rev">$909K</div>
+        <div class="sc-vs">+$359K above target ✓</div>
+        <div class="sc-prog-wrap">
+          <div class="sc-prog-label">
+            <span>$0</span>
+            <span>165% of target</span>
+            <span>$550K</span>
+          </div>
+          <div class="sc-prog-track">
+            <div class="sc-prog-fill" style="width:100%"></div>
+          </div>
+        </div>
+        <div class="sc-rows">
+          <div class="sc-row"><span class="sc-row-label">Booked Calls / mo</span><span class="sc-row-val hi">300</span></div>
+          <div class="sc-row"><span class="sc-row-label">Close Rate</span><span class="sc-row-val hi">29%</span></div>
+          <div class="sc-row"><span class="sc-row-label">BE Deals / mo</span><span class="sc-row-val hi">18</span></div>
+          <div class="sc-row"><span class="sc-row-label">FE Collected</span><span class="sc-row-val">$302K</span></div>
+          <div class="sc-row"><span class="sc-row-label">BE Collected</span><span class="sc-row-val">$115K</span></div>
+          <div class="sc-row"><span class="sc-row-label">MRR</span><span class="sc-row-val">$107K</span></div>
+          <div class="sc-row"><span class="sc-row-label">AR</span><span class="sc-row-val">$233K</span></div>
+          <div class="sc-row"><span class="sc-row-label">Ad Spend</span><span class="sc-row-val">$110K</span></div>
+        </div>
+        <div class="sc-desc">Janie + Pam + Andrea all firing. New VSL cutting CPL back below $45. Close rate recovered to 29% with unified pitch. Cory BE machine at 18 deals/mo. Webinar + scholarship compound effect.</div>
+      </div>
+
+    </div>
+
+    <div class="footnote" style="margin-top:0">
+      Sources: Monthly Projection Template (updated 4/28/26) · 2025–2026 COMBINED Sales Dashboard FE &amp; BE · 2025–2026 SC Backend Upsell Tracker · P&amp;L TTM (Mar '25–Feb '26)<br>
+      Forward projections (May–Jul) are scenario models, not guarantees. Conservative assumes close rate recovery to 23%, booked calls to 220, BE to 12/mo. Best case requires full team integration and creative recovery.
+      Worst case = April trajectory extrapolated. Seller Note protection requires 2 consecutive months ≥ $550K IFCA-only gross collected.
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── View switcher ───────────────────────────────────────────────
+function switchView(view, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  btn.classList.add('active');
+
+  const scBtns = document.getElementById('scenario-btns');
+  const sub    = document.getElementById('header-sub-text');
+  if (view === 'calculator') {
+    scBtns.style.display = 'flex';
+    sub.textContent = 'IFCA-only post-close model · Apr 2026 actuals baseline · adjust sliders to project';
+  } else {
+    scBtns.style.display = 'none';
+    sub.textContent = 'Q1 2026 actuals + May–Jul projections + 90-day recovery scenarios · updated Apr 28, 2026';
+  }
+}
+
+// ─── Calculator logic ────────────────────────────────────────────
+const BASE = {
+  booked: 95, show: 0.735, close: 0.219, aov: 12000, fecr: 0.54,
+  beur: 0.09, beaov: 14000, becr: 0.45, mrr: 27900, ar: 50000, fca: 0
+};
+
+const BASE_LIVE  = BASE.booked * BASE.show;
+const BASE_FECL  = BASE_LIVE * BASE.close;
+const BASE_FE    = BASE_FECL * BASE.aov * BASE.fecr;
+const BASE_BECL  = BASE_FECL * BASE.beur;
+const BASE_BE    = BASE_BECL * BASE.beaov * BASE.becr;
+const BASE_IFCA  = BASE_FE + BASE_BE + BASE.mrr + BASE.ar;
+
+function fmt(n) {
+  if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1e3) return '$' + Math.round(n/1e3) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtPct(n) { return (n*100).toFixed(1) + '%'; }
+function fmtInt(n) { return Math.round(n).toLocaleString(); }
+
+function updateFill(el, min, max) {
+  const pct = ((el.value - min) / (max - min)) * 100;
+  el.style.setProperty('--fill', pct + '%');
+}
+
+function initFills() {
+  [
+    ['sl-booked',50,450],['sl-show',0.40,0.95],['sl-close',0.10,0.45],
+    ['sl-aov',8500,20000],['sl-fecr',0.35,0.78],
+    ['sl-beur',0.05,0.50],['sl-beaov',12000,50000],['sl-becr',0.20,0.70],
+    ['sl-mrr',20000,100000],['sl-ar',20000,250000],['sl-fca',0,450000]
+  ].forEach(([id,mn,mx]) => {
+    const el = document.getElementById(id);
+    if (el) updateFill(el, mn, mx);
+  });
+}
+
+function set(id, val) { const el = document.getElementById(id); if(el) el.textContent = val; }
+
+function update() {
+  const booked = +document.getElementById('sl-booked').value;
+  const show   = +document.getElementById('sl-show').value;
+  const close  = +document.getElementById('sl-close').value;
+  const aov    = +document.getElementById('sl-aov').value;
+  const fecr   = +document.getElementById('sl-fecr').value;
+  const beur   = +document.getElementById('sl-beur').value;
+  const beaov  = +document.getElementById('sl-beaov').value;
+  const becr   = +document.getElementById('sl-becr').value;
+  const mrr    = +document.getElementById('sl-mrr').value;
+  const ar     = +document.getElementById('sl-ar').value;
+  const fca    = +document.getElementById('sl-fca').value;
+
+  set('val-booked', fmtInt(booked));
+  set('val-show',   fmtPct(show));
+  set('val-close',  fmtPct(close));
+  set('val-aov',    '$' + aov.toLocaleString());
+  set('val-fecr',   fmtPct(fecr));
+  set('val-beur',   fmtPct(beur));
+  set('val-beaov',  '$' + beaov.toLocaleString());
+  set('val-becr',   fmtPct(becr));
+  set('val-mrr',    fmt(mrr));
+  set('val-ar',     fmt(ar));
+  set('val-fca',    fmt(fca));
+
+  const live    = booked * show;
+  const feCl    = live * close;
+  const feGen   = feCl * aov;
+  const feCash  = feGen * fecr;
+  const beCl    = feCl * beur;
+  const beGen   = beCl * beaov;
+  const beCash  = beGen * becr;
+  const ifca    = feCash + beCash + mrr + ar;
+  const combo   = ifca + fca;
+  const comboAnn = combo * 12;
+  const ifcaAnn  = ifca * 12;
+  const fcaAnn   = fca * 12;
+  const totalGen = feGen + beGen;
+
+  // Pipeline
+  set('o-booked',     fmtInt(booked));
+  set('o-live',       fmtInt(Math.round(live)));
+  set('o-showlabel',  fmtPct(show) + ' show');
+  set('o-fecl',       fmtInt(Math.round(feCl)));
+  set('o-closelabel', fmtPct(close) + ' close');
+  set('o-becl',       fmtInt(Math.round(beCl)));
+  set('o-belabel',    fmtPct(beur) + ' upsell');
+  set('o-revgen',     fmt(totalGen));
+  set('o-aovlabel',   fmt(aov) + ' AOV');
+
+  // Breakdown table
+  const fePct  = ifca > 0 ? feCash / ifca : 0;
+  const bePct  = ifca > 0 ? beCash / ifca : 0;
+  const mrrPct = ifca > 0 ? mrr    / ifca : 0;
+  const arPct  = ifca > 0 ? ar     / ifca : 0;
+
+  set('bt-fegen',   fmt(feGen));
+  set('bt-fecash',  fmt(feCash));
+  set('bt-fepct',   fmtPct(fePct));
+  set('bt-begen',   fmt(beGen));
+  set('bt-becash',  fmt(beCash));
+  set('bt-bepct',   fmtPct(bePct));
+  set('bt-mrrcash', fmt(mrr));
+  set('bt-mrrpct',  fmtPct(mrrPct));
+  set('bt-arcash',  fmt(ar));
+  set('bt-arpct',   fmtPct(arPct));
+  set('bt-totgen',  fmt(totalGen));
+  set('bt-totcash', fmt(ifca));
+
+  document.getElementById('bt-febar').style.width  = Math.round(fePct  * 70) + 'px';
+  document.getElementById('bt-bebar').style.width  = Math.round(bePct  * 70) + 'px';
+  document.getElementById('bt-mrrbar').style.width = Math.round(mrrPct * 70) + 'px';
+  document.getElementById('bt-arbar').style.width  = Math.round(arPct  * 70) + 'px';
+
+  // Combined cards
+  set('c-ifca',  fmt(ifca));
+  set('c-fca',   fmt(fca));
+  set('c-combo', fmt(combo));
+
+  const ifcaDelta  = ifca - BASE_IFCA;
+  const ifcaBadge  = document.getElementById('c-ifcabadge');
+  if (Math.abs(ifcaDelta) < 3000) {
+    ifcaBadge.textContent = '≈ Apr baseline';
+    ifcaBadge.className = 'c-badge warn';
+  } else if (ifcaDelta > 0) {
+    ifcaBadge.textContent = '+' + fmt(ifcaDelta) + ' vs Apr';
+    ifcaBadge.className = 'c-badge pos';
+  } else {
+    ifcaBadge.textContent = fmt(ifcaDelta) + ' vs Apr';
+    ifcaBadge.className = 'c-badge neg';
+  }
+  set('c-ifcasub', 'Apr \'26 actuals baseline: ' + fmt(BASE_IFCA));
+
+  const comboBadge = document.getElementById('c-combobadge');
+  const gap833     = combo - 833333;
+  if (gap833 >= 0) {
+    comboBadge.textContent = '+' + fmt(gap833) + ' above $10M pace';
+    comboBadge.className = 'c-badge pos';
+    set('c-combosub', '✓ At or above $10M annual pace');
+  } else {
+    comboBadge.textContent = fmt(Math.abs(gap833)) + ' gap to $10M pace';
+    comboBadge.className = 'c-badge neg';
+    set('c-combosub', 'Gap to $10M annual: ' + fmt(Math.abs(gap833 * 12)));
+  }
+
+  // Target bar — $550K IFCA Lookback
+  const LOOKBACK_TARGET = 550000;
+  const lb_pct = Math.min(ifca / LOOKBACK_TARGET * 100, 115);
+  const lbColor = lb_pct >= 100 ? 'var(--green)' : lb_pct >= 80 ? 'var(--amber)' : 'var(--red)';
+  const pctEl = document.getElementById('tgt-pct');
+  pctEl.textContent = (ifca / LOOKBACK_TARGET * 100).toFixed(0) + '%';
+  pctEl.style.color = lbColor;
+  const barEl = document.getElementById('tgt-bar');
+  barEl.style.width = Math.min(lb_pct, 100) + '%';
+  barEl.style.background = lbColor;
+  set('tgt-lbl', fmt(ifca) + ' projected IFCA monthly');
+
+  set('ms-ifca-mo', fmt(ifca));
+  const gap550 = ifca - LOOKBACK_TARGET;
+  const gap550El = document.getElementById('ms-550gap');
+  if (gap550 >= 0) {
+    gap550El.textContent = '+' + fmt(gap550);
+    gap550El.style.color = 'var(--green)';
+  } else {
+    gap550El.textContent = fmt(gap550);
+    gap550El.style.color = 'var(--red)';
+  }
+  set('ms-combo-mo', fmt(combo));
+  const gap10m = comboAnn - 10000000;
+  const gap10mEl = document.getElementById('ms-10m-gap');
+  if (gap10m >= 0) {
+    gap10mEl.textContent = '+' + fmt(gap10m);
+    gap10mEl.style.color = 'var(--green)';
+  } else {
+    gap10mEl.textContent = fmt(gap10m);
+    gap10mEl.style.color = 'var(--red)';
+  }
+
+  // Annual
+  set('ann-ifca',  fmt(ifcaAnn));
+  set('ann-fca',   fmt(fcaAnn));
+  set('ann-combo', fmt(comboAnn));
+  const gapAnn   = comboAnn - 10000000;
+  const annGapEl = document.getElementById('ann-gap');
+  if (gapAnn >= 0) {
+    annGapEl.textContent = '✓ +' + fmt(gapAnn) + ' above $10M';
+    annGapEl.style.color = 'var(--green)';
+  } else {
+    annGapEl.textContent = 'Gap to $10M: ' + fmt(Math.abs(gapAnn));
+    annGapEl.style.color = 'var(--red)';
+  }
+
+  // Lever table
+  const feCashNewClose = live * close * aov * fecr;
+  const closeImpact    = feCashNewClose - BASE_FE;
+  const feCashNewCalls = booked * BASE.show * BASE.close * BASE.aov * BASE.fecr;
+  const callsImpact    = feCashNewCalls - BASE_FE;
+  const beCashNewRate  = BASE_FECL * beur * beaov * becr;
+  const beImpact       = beCashNewRate - BASE_BE;
+  const mrrImpact      = mrr - BASE.mrr;
+
+  function leverEl(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (Math.abs(val) < 500) {
+      el.textContent = '≈ baseline'; el.className = 'lever-delta zero';
+    } else if (val > 0) {
+      el.textContent = '+' + fmt(val) + '/mo'; el.className = 'lever-delta pos';
+    } else {
+      el.textContent = fmt(val) + '/mo'; el.className = 'lever-delta neg';
+    }
+  }
+  leverEl('lv-close', closeImpact);
+  leverEl('lv-calls', callsImpact);
+  leverEl('lv-be',    beImpact);
+  leverEl('lv-mrr',   mrrImpact);
+  leverEl('lv-total', ifca - BASE_IFCA);
+}
+
+// ─── Scenario presets ────────────────────────────────────────────
+const SCENARIOS = {
+  current: {
+    booked:95, show:0.735, close:0.219, aov:12000, fecr:0.54,
+    beur:0.09, beaov:14000, becr:0.45, mrr:27900, ar:50000, fca:0
+  },
+  conservative: {
+    booked:110, show:0.70, close:0.22, aov:12000, fecr:0.50,
+    beur:0.11, beaov:16000, becr:0.42, mrr:29000, ar:52000, fca:0
+  },
+  recovery: {
+    booked:200, show:0.76, close:0.25, aov:12000, fecr:0.54,
+    beur:0.20, beaov:18000, becr:0.45, mrr:33000, ar:58000, fca:0
+  },
+  optimistic: {
+    booked:300, show:0.80, close:0.30, aov:12500, fecr:0.58,
+    beur:0.28, beaov:22000, becr:0.50, mrr:40000, ar:68000, fca:0
+  }
+};
+
+function setScenario(key, btn) {
+  const s = SCENARIOS[key];
+  document.getElementById('sl-booked').value = s.booked;
+  document.getElementById('sl-show').value   = s.show;
+  document.getElementById('sl-close').value  = s.close;
+  document.getElementById('sl-aov').value    = s.aov;
+  document.getElementById('sl-fecr').value   = s.fecr;
+  document.getElementById('sl-beur').value   = s.beur;
+  document.getElementById('sl-beaov').value  = s.beaov;
+  document.getElementById('sl-becr').value   = s.becr;
+  document.getElementById('sl-mrr').value    = s.mrr;
+  document.getElementById('sl-ar').value     = s.ar;
+  document.getElementById('sl-fca').value    = s.fca;
+
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  initFills();
+  update();
+}
+
+// ─── Init ────────────────────────────────────────────────────────
+initFills();
+update();
+</script>
+</body>
+</html>

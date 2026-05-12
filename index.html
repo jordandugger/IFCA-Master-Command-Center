@@ -3,2076 +3,331 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IFCA × FCA | Monthly Projections Calculator</title>
+<title>IFCA Command Center</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg: #07101e;
-  --panel: #0d1929;
-  --panel2: #111f30;
-  --panel3: #162437;
-  --border: #1e3050;
-  --border2: #243a5a;
-  --text: #c8d8ea;
-  --muted: #4e6a88;
-  --green: #10b981;
-  --green-dim: rgba(16,185,129,0.08);
-  --green-mid: rgba(16,185,129,0.18);
-  --amber: #f59e0b;
-  --amber-dim: rgba(245,158,11,0.08);
-  --amber-mid: rgba(245,158,11,0.18);
-  --red: #f87171;
-  --red-dim: rgba(248,113,113,0.08);
-  --blue: #60a5fa;
-  --blue-dim: rgba(96,165,250,0.08);
-  --purple: #a78bfa;
-  --purple-dim: rgba(167,139,250,0.08);
-  --white: #f0f6ff;
-  --accent: #38bdf8;
-  --accent-dim: rgba(56,189,248,0.08);
-  --gold: #fbbf24;
-}
-
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Outfit', sans-serif;
-  min-height: 100vh;
-  font-size: 14px;
-}
-
-.header {
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.logo {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 16px;
-  color: var(--white);
-  letter-spacing: 0.02em;
-}
-
-.logo span {
-  color: var(--accent);
-}
-
-.header-tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  background: var(--panel3);
-  border: 1px solid var(--border);
-  padding: 2px 8px;
-  border-radius: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.month-selector {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.month-selector label {
-  font-size: 12px;
-  color: var(--muted);
-  font-family: 'IBM Plex Mono', monospace;
-}
-
-.month-selector select {
-  background: var(--panel3);
-  border: 1px solid var(--border2);
-  color: var(--white);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 13px;
-  cursor: pointer;
-  outline: none;
-}
-
-.month-selector select:focus {
-  border-color: var(--accent);
-}
-
-.main {
-  padding: 24px 28px;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-/* ─── LOOKBACK BANNER ─── */
-.lookback-banner {
-  background: linear-gradient(135deg, rgba(251,191,36,0.08) 0%, rgba(56,189,248,0.05) 100%);
-  border: 1px solid rgba(251,191,36,0.25);
-  border-radius: 10px;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 22px;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.lookback-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--gold);
-  margin-bottom: 3px;
-}
-
-.lookback-value {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--white);
-}
-
-.lookback-gap {
-  text-align: center;
-}
-
-.lookback-gap .gap-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
-}
-
-.lookback-note {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-/* ─── SECTION TABS ─── */
-.section-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 4px;
-  overflow-x: auto;
-}
-
-.tab-btn {
-  padding: 7px 16px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: 500;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  white-space: nowrap;
-  transition: all 0.15s;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.tab-btn:hover { color: var(--text); }
-
-.tab-btn.active {
-  background: var(--accent);
-  color: #07101e;
-  font-weight: 700;
-}
-
-/* ─── SECTION CONTENT ─── */
-.section-content { display: none; }
-.section-content.active { display: block; }
-
-/* ─── HISTORY AVERAGES BAR ─── */
-.history-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.hist-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.hist-card:hover {
-  border-color: var(--accent);
-}
-
-.hist-card.selected {
-  border-color: var(--accent);
-  background: var(--accent-dim);
-}
-
-.hist-card-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 6px;
-}
-
-.hist-card-value {
-  font-family: 'Syne', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--white);
-}
-
-.hist-card-sub {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-/* ─── PROJECTION TABLE ─── */
-.proj-grid {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.proj-grid-header {
-  display: grid;
-  grid-template-columns: 220px 1fr 1fr 1fr 90px 100px;
-  gap: 0;
-  background: var(--panel3);
-  border-bottom: 1px solid var(--border);
-  padding: 0;
-}
-
-.proj-grid-header > div {
-  padding: 10px 14px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border-right: 1px solid var(--border);
-}
-
-.proj-grid-header > div:last-child {
-  border-right: none;
-}
-
-.proj-row {
-  display: grid;
-  grid-template-columns: 220px 1fr 1fr 1fr 90px 100px;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
-}
-
-.proj-row:last-child { border-bottom: none; }
-.proj-row:hover { background: rgba(56,189,248,0.03); }
-
-.proj-row.section-header {
-  background: var(--panel3);
-}
-
-.proj-row.section-header .proj-cell:first-child {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.proj-cell {
-  padding: 9px 14px;
-  border-right: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-}
-
-.proj-cell:last-child { border-right: none; }
-
-.proj-cell.metric-name {
-  color: var(--text);
-  font-size: 12px;
-  padding-left: 20px;
-}
-
-.proj-cell.metric-name.top-level {
-  padding-left: 14px;
-  font-weight: 600;
-  color: var(--white);
-}
-
-.proj-cell input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--white);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  outline: none;
-  padding: 2px 0;
-  text-align: right;
-}
-
-.proj-cell input:focus {
-  color: var(--accent);
-  border-bottom: 1px solid var(--accent);
-}
-
-.proj-cell.auto-calc {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  justify-content: flex-end;
-  color: var(--muted);
-}
-
-.proj-cell.auto-calc.computed {
-  color: var(--accent);
-}
-
-.proj-cell.variance {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  justify-content: flex-end;
-}
-
-.variance.pos { color: var(--green); }
-.variance.neg { color: var(--red); }
-.variance.neutral { color: var(--muted); }
-
-.proj-cell.hist-ref {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  justify-content: flex-end;
-  color: var(--muted);
-  opacity: 0.7;
-}
-
-/* ─── NOTES CELL ─── */
-.notes-btn {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'IBM Plex Mono', monospace;
-  transition: all 0.15s;
-}
-
-.notes-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* ─── TOTAL SUMMARY ROW ─── */
-.proj-row.total-row {
-  background: linear-gradient(90deg, rgba(56,189,248,0.05), transparent);
-  border-top: 2px solid var(--accent);
-}
-
-.proj-row.total-row .proj-cell {
-  font-weight: 700;
-  color: var(--white);
-  font-family: 'Syne', sans-serif;
-}
-
-/* ─── ADD ROW ─── */
-.add-row-btn {
-  background: none;
-  border: 1px dashed var(--border);
-  color: var(--muted);
-  width: 100%;
-  padding: 8px;
-  cursor: pointer;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  transition: all 0.15s;
-  border-radius: 0 0 8px 8px;
-  text-align: center;
-}
-
-.add-row-btn:hover {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-/* ─── SUMMARY CARDS ─── */
-.summary-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.sum-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
-}
-
-.sum-card-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-.sum-card-value {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--white);
-}
-
-.sum-card-compare {
-  font-size: 11px;
-  margin-top: 4px;
-  color: var(--muted);
-}
-
-.sum-card-compare .up { color: var(--green); }
-.sum-card-compare .dn { color: var(--red); }
-
-.sum-card.highlight {
-  border-color: var(--gold);
-  background: linear-gradient(135deg, rgba(251,191,36,0.06), transparent);
-}
-
-.sum-card.highlight .sum-card-value {
-  color: var(--gold);
-}
-
-/* ─── NOTES MODAL ─── */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 500;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-overlay.open { display: flex; }
-
-.modal {
-  background: var(--panel2);
-  border: 1px solid var(--border2);
-  border-radius: 12px;
-  padding: 24px;
-  width: 480px;
-  max-width: 95vw;
-}
-
-.modal-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--white);
-  margin-bottom: 12px;
-}
-
-.modal textarea {
-  width: 100%;
-  background: var(--panel3);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 6px;
-  padding: 10px 12px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 13px;
-  resize: vertical;
-  min-height: 100px;
-  outline: none;
-}
-
-.modal textarea:focus {
-  border-color: var(--accent);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-  justify-content: flex-end;
-}
-
-.btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all 0.15s;
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: #07101e;
-  font-weight: 700;
-}
-
-.btn-primary:hover { opacity: 0.9; }
-
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-}
-
-.btn-ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* ─── CLOSER TABLE ─── */
-.closer-table {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.ct-header, .ct-row {
-  display: grid;
-  grid-template-columns: 160px repeat(7, 1fr) 100px;
-  border-bottom: 1px solid var(--border);
-}
-
-.ct-header > div, .ct-row > div {
-  padding: 9px 12px;
-  border-right: 1px solid var(--border);
-}
-
-.ct-header > div:last-child, .ct-row > div:last-child { border-right: none; }
-
-.ct-header > div {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  background: var(--panel3);
-}
-
-.ct-row:last-child { border-bottom: none; }
-.ct-row:hover { background: rgba(56,189,248,0.02); }
-
-.ct-row input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--white);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  outline: none;
-  text-align: right;
-}
-
-.ct-row input:focus { color: var(--accent); border-bottom: 1px solid var(--accent); }
-
-.ct-row .closer-name {
-  font-weight: 600;
-  color: var(--text);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-}
-
-.ct-row.totals-row {
-  background: var(--panel3);
-  font-weight: 700;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-}
-
-.ct-row.totals-row > div { color: var(--accent); }
-
-.auto-val {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  color: var(--muted);
-  text-align: right;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.auto-val.good { color: var(--green); }
-.auto-val.warn { color: var(--amber); }
-.auto-val.bad  { color: var(--red);   }
-
-/* ─── CAMPAIGN TABLE ─── */
-.campaign-table {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.camp-header, .camp-row {
-  display: grid;
-  grid-template-columns: 200px 110px 110px 110px 100px 1fr;
-  border-bottom: 1px solid var(--border);
-}
-
-.camp-header > div, .camp-row > div {
-  padding: 9px 14px;
-  border-right: 1px solid var(--border);
-}
-
-.camp-header > div:last-child, .camp-row > div:last-child { border-right: none; }
-
-.camp-header > div {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  background: var(--panel3);
-}
-
-.camp-row:last-child { border-bottom: none; }
-
-.camp-row input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--white);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  outline: none;
-}
-
-.camp-row input:focus { color: var(--accent); border-bottom: 1px solid var(--accent); }
-
-.camp-row .camp-name {
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-}
-
-.tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.tag-paid { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
-.tag-organic { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
-.tag-event { background: rgba(167,139,250,0.15); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
-
-/* ─── SETTER TABLE ─── */
-.setter-table {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.st-header, .st-row {
-  display: grid;
-  grid-template-columns: 160px repeat(5, 1fr) 90px;
-  border-bottom: 1px solid var(--border);
-}
-
-.st-header > div, .st-row > div {
-  padding: 9px 12px;
-  border-right: 1px solid var(--border);
-}
-
-.st-header > div:last-child, .st-row > div:last-child { border-right: none; }
-
-.st-header > div {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  background: var(--panel3);
-}
-
-.st-row:last-child { border-bottom: none; }
-.st-row:hover { background: rgba(56,189,248,0.02); }
-
-.st-row input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--white);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  outline: none;
-  text-align: right;
-}
-
-.st-row input:focus { color: var(--accent); border-bottom: 1px solid var(--accent); }
-
-.st-row .setter-name {
-  font-weight: 600;
-  color: var(--text);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-}
-
-.st-row.totals-row {
-  background: var(--panel3);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-}
-.st-row.totals-row > div { color: var(--accent); font-weight: 600; }
-
-/* ─── SECTION TITLE ─── */
-.section-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--white);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-title .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-/* ─── HISTORY TOGGLE ─── */
-.hist-toggle-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
-  align-items: center;
-}
-
-.hist-toggle-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.hist-btn {
-  background: var(--panel3);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  transition: all 0.15s;
-}
-
-.hist-btn:hover { border-color: var(--accent); color: var(--text); }
-
-.hist-btn.active {
-  background: var(--accent);
-  color: #07101e;
-  border-color: var(--accent);
-  font-weight: 700;
-}
-
-/* ─── APPLY BUTTON ─── */
-.apply-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--green);
-  color: #07101e;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  transition: all 0.15s;
-}
-
-.apply-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
-.confirm-toast {
-  display: none;
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: var(--green);
-  color: #07101e;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  z-index: 999;
-  letter-spacing: 0.05em;
-  animation: fadeSlide 0.3s ease;
-}
-
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── SCROLLBAR ─── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-/* ─── RESPONSIVE ─── */
-@media (max-width: 1100px) {
-  .summary-row { grid-template-columns: repeat(3, 1fr); }
-  .history-bar { grid-template-columns: repeat(2, 1fr); }
-}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07101e;--panel:#0d1929;--panel2:#111f30;--panel3:#162437;
+  --border:#1e3050;--border2:#243a5a;--text:#c8d8ea;--muted:#4e6a88;
+  --green:#10b981;--amber:#f59e0b;--red:#f87171;--blue:#60a5fa;
+  --accent:#38bdf8;--gold:#fbbf24;--white:#f0f6ff;--purple:#a78bfa;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;font-size:14px}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:var(--white)}
+.logo span{color:var(--accent)}
+.header-center{display:flex;gap:2px;background:var(--panel3);border:1px solid var(--border);border-radius:7px;padding:3px}
+.nav-btn{padding:6px 16px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;background:transparent;border:none;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;transition:all .15s;white-space:nowrap}
+.nav-btn:hover{color:var(--text)}
+.nav-btn.active{background:var(--accent);color:#07101e}
+.header-right{display:flex;align-items:center;gap:10px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--amber)}
+.status-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)}
+.lookback-bar{background:linear-gradient(90deg,rgba(251,191,36,.06),rgba(56,189,248,.04));border-bottom:1px solid rgba(251,191,36,.2);padding:10px 28px;display:flex;align-items:center;gap:32px;overflow-x:auto}
+.lb-item{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
+.lb-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.lb-value{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--white)}
+.lb-divider{width:1px;height:36px;background:var(--border);flex-shrink:0}
+.lb-note{font-size:10px;color:var(--muted)}
+.main{padding:24px 28px;max-width:1600px;margin:0 auto}
+.view{display:none}
+.view.active{display:block}
+.section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--white);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.stag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em}
+.stag-pending{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.stag-live{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.stag-built{background:rgba(56,189,248,.1);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.kpi-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.kpi-card.hl{border-color:var(--gold);background:linear-gradient(135deg,rgba(251,191,36,.05),transparent)}
+.kpi-card.warn{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.04)}
+.kpi-card.good{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.04)}
+.kpi-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+.kpi-value{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--white)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 6px;border-radius:3px}
+.bg{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.ba{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.br{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.bb{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+.bm{background:var(--panel3);color:var(--muted);border:1px solid var(--border)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.pbox{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px}
+.prog-wrap{margin-top:8px}
+.prog-lbl{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px}
+.prog-track{height:6px;background:var(--panel3);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .5s}
+.pg{background:var(--green)}
+.pa{background:var(--amber)}
+.pr{background:var(--red)}
+.pgold{background:var(--gold)}
+.dt{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.dth{display:grid;background:var(--panel3);border-bottom:1px solid var(--border)}
+.dth>div{padding:9px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-right:1px solid var(--border)}
+.dth>div:last-child{border-right:none}
+.dtr{display:grid;border-bottom:1px solid var(--border)}
+.dtr:last-child{border-bottom:none}
+.dtr:hover{background:rgba(56,189,248,.03)}
+.dtc{padding:10px 14px;border-right:1px solid var(--border);font-size:13px;display:flex;align-items:center}
+.dtc:last-child{border-right:none}
+.dtc.mono{font-family:'IBM Plex Mono',monospace;font-size:12px;justify-content:flex-end}
+.dtc.nm{font-weight:600;color:var(--white)}
+.dttot{display:grid;background:var(--panel3);border-top:2px solid var(--accent)}
+.dttot>div{padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--accent);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end}
+.dttot>div:first-child{justify-content:flex-start;color:var(--white)}
+.dttot>div:last-child{border-right:none}
+.ph{background:var(--panel);border:1px dashed var(--border2);border-radius:10px;padding:32px;text-align:center;margin-bottom:20px}
+.ph-icon{font-size:28px;margin-bottom:10px}
+.ph-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--white);margin-bottom:6px}
+.ph-text{font-size:12px;color:var(--muted);max-width:380px;margin:0 auto 14px}
+code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--panel3);padding:1px 5px;border-radius:3px;color:var(--accent)}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.two-col,.three-col,.four-col{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.header-center{display:none}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
 <div class="header">
-  <div class="header-left">
-    <div class="logo">IFCA <span>×</span> FCA</div>
-    <div class="header-tag">Projections Calculator</div>
+  <div class="logo">IFCA <span>×</span> FCA &nbsp;<span style="color:var(--muted);font-weight:400;font-size:13px">Command Center</span></div>
+  <div class="header-center">
+    <button class="nav-btn active" onclick="showView('overview',this)">Overview</button>
+    <button class="nav-btn" onclick="showView('ads',this)">Ads</button>
+    <button class="nav-btn" onclick="showView('sales',this)">Sales</button>
+    <button class="nav-btn" onclick="showView('backend',this)">Back-End</button>
+    <button class="nav-btn" onclick="showView('projections',this)">Projections</button>
+    <button class="nav-btn" onclick="window.location.href='docs/project-scope.html'">Scope</button>
   </div>
-  <div style="display:flex;gap:12px;align-items:center;">
-    <div class="month-selector">
-      <label>MONTH</label>
-      <select id="monthSelect" onchange="switchMonth()">
-        <option value="may2026" selected>May 2026</option>
-        <option value="jun2026">June 2026</option>
-        <option value="jul2026">July 2026</option>
-      </select>
+  <div class="header-right">
+    <div style="display:flex;align-items:center;gap:5px">
+      <div class="status-dot"></div>
+      <span class="status-label">Seeded · feeds pending</span>
     </div>
-    <button class="apply-btn" onclick="saveProjections()">💾 Save Projections</button>
+    <button onclick="window.location.href='projections/index.html'" style="background:var(--accent);color:#07101e;border:none;padding:6px 14px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.05em">Set Projections →</button>
   </div>
 </div>
 
-<!-- MAIN -->
+<div class="lookback-bar">
+  <div class="lb-item"><div class="lb-label">🎯 Lookback Target</div><div class="lb-value" style="color:var(--gold)">$550,000</div><div class="lb-note">2 consecutive months</div></div>
+  <div class="lb-divider"></div>
+  <div class="lb-item"><div class="lb-label">May Proj Revenue</div><div class="lb-value" style="color:var(--amber)">$315,475</div></div>
+  <div class="lb-item"><div class="lb-label">Gap to $550K</div><div class="lb-value" style="color:var(--gold)">$234,525</div></div>
+  <div class="lb-divider"></div>
+  <div class="lb-item"><div class="lb-label">Total MRR</div><div class="lb-value">$88,000</div></div>
+  <div class="lb-item"><div class="lb-label">Close Rate MTD</div><div class="lb-value" style="color:var(--red)">—</div><div class="lb-note">Target: 25%</div></div>
+  <div class="lb-item"><div class="lb-label">Sets Booked MTD</div><div class="lb-value" style="color:var(--amber)">—</div><div class="lb-note">Target: 115–130</div></div>
+  <div class="lb-item"><div class="lb-label">CPL MTD</div><div class="lb-value" style="color:var(--red)">—</div><div class="lb-note">Target: $38–50</div></div>
+  <div class="lb-divider"></div>
+  <div class="lb-item"><div class="lb-label">Apr Actual</div><div class="lb-value" style="color:var(--muted)">$396,938</div></div>
+  <div class="lb-item"><div class="lb-label">3-Mo Avg</div><div class="lb-value" style="color:var(--muted)">$418,255</div></div>
+</div>
+
 <div class="main">
 
-  <!-- LOOKBACK BANNER -->
-  <div class="lookback-banner">
-    <div>
-      <div class="lookback-label">$550K Lookback Target</div>
-      <div class="lookback-value">$550,000 / mo</div>
-    </div>
-    <div>
-      <div class="lookback-label">April Actual (Prior Month)</div>
-      <div class="lookback-value" id="priorMonthActual">$446,242</div>
-    </div>
-    <div>
-      <div class="lookback-label">3-Month Avg (FE + BE + MRR)</div>
-      <div class="lookback-value" id="threeMonthAvg">$445,137</div>
-    </div>
-    <div class="lookback-gap">
-      <div class="lookback-label">May Target Gap</div>
-      <div class="lookback-value gap-num" id="targetGap" style="color:var(--gold);">$103,758</div>
-      <div class="lookback-note">vs. $550K Lookback floor</div>
-    </div>
-    <div>
-      <div class="lookback-label">May Proj (Current)</div>
-      <div class="lookback-value" id="currentProjTotal" style="color:var(--accent);">$0</div>
-    </div>
+<!-- OVERVIEW -->
+<div id="view-overview" class="view active">
+  <div class="kpi-grid">
+    <div class="kpi-card hl"><div class="kpi-label">Gross Revenue — May Proj</div><div class="kpi-value" style="color:var(--gold)">$315,475</div><div class="kpi-sub" style="color:var(--amber)">$234K gap to $550K lookback floor</div></div>
+    <div class="kpi-card warn"><div class="kpi-label">Close Rate (MTD)</div><div class="kpi-value" style="color:var(--red)">—</div><div class="kpi-sub">Target 25% · Apr: 16% · PIF feed pending</div></div>
+    <div class="kpi-card warn"><div class="kpi-label">Setter Sets (MTD)</div><div class="kpi-value" style="color:var(--amber)">—</div><div class="kpi-sub">Target 115–130 · Apr: 48 · PIF feed pending</div></div>
+    <div class="kpi-card"><div class="kpi-label">CPL (MTD)</div><div class="kpi-value" style="color:var(--red)">—</div><div class="kpi-sub">Target $38–50 · Apr: $79.98 · Meta MCP pending</div></div>
+    <div class="kpi-card"><div class="kpi-label">BE Upsells (MTD)</div><div class="kpi-value">—</div><div class="kpi-sub">Legacy + 7FCEO + Cont · Sheets pending</div></div>
   </div>
 
-  <!-- TABS -->
-  <div class="section-tabs">
-    <button class="tab-btn active" onclick="showTab('revenue')">💰 Revenue</button>
-    <button class="tab-btn" onclick="showTab('fe-sales')">📞 FE Sales</button>
-    <button class="tab-btn" onclick="showTab('setters')">🎯 Setters</button>
-    <button class="tab-btn" onclick="showTab('be-sales')">📈 BE Sales</button>
-    <button class="tab-btn" onclick="showTab('campaigns')">📣 Campaigns</button>
-    <button class="tab-btn" onclick="showTab('history')">📊 History</button>
-  </div>
-
-  <!-- ─── TAB: REVENUE ─── -->
-  <div id="tab-revenue" class="section-content active">
-
-    <!-- HISTORY TOGGLE -->
-    <div class="hist-toggle-row">
-      <span class="hist-toggle-label">Reference:</span>
-      <button class="hist-btn active" onclick="setHistRef(this,'1m')">Prior Month</button>
-      <button class="hist-btn" onclick="setHistRef(this,'3m')">3-Month Avg</button>
-      <button class="hist-btn" onclick="setHistRef(this,'6m')">6-Month Avg</button>
-    </div>
-
-    <!-- SUMMARY CARDS -->
-    <div class="summary-row" id="revSummaryCards">
-      <div class="sum-card">
-        <div class="sum-card-label">MRR (Proj)</div>
-        <div class="sum-card-value" id="sc-mrr">$88,000</div>
-        <div class="sum-card-compare"><span id="sc-mrr-vs" class="up">▲ +$14,821 vs prior</span></div>
+  <div class="two-col">
+    <div class="pbox">
+      <div class="section-title"><div class="dot"></div>Revenue Equilibrium</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><div class="kpi-label">Closes Needed ($550K)</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:var(--accent)">44</div><div style="font-size:11px;color:var(--muted)">@ $12,500 ACV</div></div>
+        <div><div class="kpi-label">Current Pace</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:var(--white)">—</div><div style="font-size:11px;color:var(--muted)">Awaiting PIF feed</div></div>
+        <div><div class="kpi-label">BE Rev Needed</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--white)">~$100K</div></div>
+        <div><div class="kpi-label">MRR (Stable)</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--green)">$88K</div></div>
       </div>
-      <div class="sum-card">
-        <div class="sum-card-label">AR Collection (Proj)</div>
-        <div class="sum-card-value" id="sc-ar">$202,276</div>
-        <div class="sum-card-compare"><span id="sc-ar-vs" class="up">▲ vs prior</span></div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-card-label">FE Cash (Proj)</div>
-        <div class="sum-card-value" id="sc-fe">$0</div>
-        <div class="sum-card-compare"><span id="sc-fe-vs" class="up">—</span></div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-card-label">BE Cash (Proj)</div>
-        <div class="sum-card-value" id="sc-be">$25,200</div>
-        <div class="sum-card-compare"><span id="sc-be-vs" class="">—</span></div>
-      </div>
-      <div class="sum-card highlight">
-        <div class="sum-card-label">Gross Revenue (Proj)</div>
-        <div class="sum-card-value" id="sc-gross">$315,476</div>
-        <div class="sum-card-compare" id="sc-gross-pct">—</div>
+      <div class="prog-wrap">
+        <div class="prog-lbl"><span>May Proj vs $550K</span><span>57.4%</span></div>
+        <div class="prog-track"><div class="prog-fill pgold" style="width:57.4%"></div></div>
       </div>
     </div>
-
-    <!-- REVENUE TABLE -->
-    <div class="proj-grid">
-      <div class="proj-grid-header">
-        <div>METRIC</div>
-        <div>PROJECTION</div>
-        <div id="rh-col1-lbl">PRIOR MONTH ACTUAL</div>
-        <div>PACE (auto)</div>
-        <div>% VAR</div>
-        <div>NOTES</div>
+    <div class="pbox">
+      <div class="section-title"><div class="dot"></div>3 Revenue Levers</div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:var(--white)">1. Close Rate</span><span class="badge br">Apr: 16% · Target: 25%</span></div>
+        <div class="prog-track"><div class="prog-fill pr" style="width:64%"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Janie target 40% · closes gap by ~$112K if hit</div>
       </div>
-
-      <!-- MRR SECTION -->
-      <div class="proj-row section-header">
-        <div class="proj-cell" style="grid-column: 1/-1; padding: 7px 14px;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">MRR</span>
-        </div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:var(--white)">2. Setter Sets/Mo</span><span class="badge ba">Apr: 48 · Target: 115–130</span></div>
+        <div class="prog-track"><div class="prog-fill pa" style="width:42%"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Pam + Andrea + inbound Aloware · +67 sets needed</div>
       </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Continuity</div>
-        <div class="proj-cell"><input type="number" id="r_mrr_cont_p" value="21000" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_mrr_cont_h">$20,067</div>
-        <div class="proj-cell auto-calc computed" id="r_mrr_cont_pace">—</div>
-        <div class="proj-cell variance" id="r_mrr_cont_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('MRR Continuity')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Trainerize</div>
-        <div class="proj-cell"><input type="number" id="r_mrr_trnz_p" value="25000" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_mrr_trnz_h">$24,863</div>
-        <div class="proj-cell auto-calc computed" id="r_mrr_trnz_pace">—</div>
-        <div class="proj-cell variance" id="r_mrr_trnz_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Trainerize MRR')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">GHL SaaS</div>
-        <div class="proj-cell"><input type="number" id="r_mrr_ghl_p" value="27000" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_mrr_ghl_h">$33,257</div>
-        <div class="proj-cell auto-calc computed" id="r_mrr_ghl_pace">—</div>
-        <div class="proj-cell variance" id="r_mrr_ghl_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('GHL SaaS MRR')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">7FCEO Memberships</div>
-        <div class="proj-cell"><input type="number" id="r_mrr_7fig_p" value="15000" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_mrr_7fig_h">$15,000</div>
-        <div class="proj-cell auto-calc computed" id="r_mrr_7fig_pace">—</div>
-        <div class="proj-cell variance" id="r_mrr_7fig_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('7FCEO MRR')">📝</button></div>
-      </div>
-
-      <div class="proj-row total-row">
-        <div class="proj-cell metric-name top-level">TOTAL MRR</div>
-        <div class="proj-cell auto-calc computed" id="r_mrr_total_p">$88,000</div>
-        <div class="proj-cell hist-ref" id="r_mrr_total_h">$93,186</div>
-        <div class="proj-cell auto-calc" id="r_mrr_total_pace">—</div>
-        <div class="proj-cell variance" id="r_mrr_total_v">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <!-- AR SECTION -->
-      <div class="proj-row section-header">
-        <div class="proj-cell" style="grid-column: 1/-1; padding: 7px 14px;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">AR COLLECTIONS</span>
-        </div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">AR – LaunchKit</div>
-        <div class="proj-cell"><input type="number" id="r_ar_lk_p" value="1800" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_ar_lk_h">$2,000</div>
-        <div class="proj-cell auto-calc computed" id="r_ar_lk_pace">—</div>
-        <div class="proj-cell variance" id="r_ar_lk_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('AR LaunchKit')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">AR – IFCA FE</div>
-        <div class="proj-cell"><input type="number" id="r_ar_fe_p" value="102190" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_ar_fe_h">$105,874</div>
-        <div class="proj-cell auto-calc computed" id="r_ar_fe_pace">—</div>
-        <div class="proj-cell variance" id="r_ar_fe_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('AR IFCA FE')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">AR – Legacy + 7FCEO BE</div>
-        <div class="proj-cell"><input type="number" id="r_ar_be_p" value="98285" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_ar_be_h">$85,780</div>
-        <div class="proj-cell auto-calc computed" id="r_ar_be_pace">—</div>
-        <div class="proj-cell variance" id="r_ar_be_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('AR Legacy BE')">📝</button></div>
-      </div>
-
-      <div class="proj-row total-row">
-        <div class="proj-cell metric-name top-level">TOTAL AR</div>
-        <div class="proj-cell auto-calc computed" id="r_ar_total_p">$202,275</div>
-        <div class="proj-cell hist-ref" id="r_ar_total_h">$193,654</div>
-        <div class="proj-cell auto-calc" id="r_ar_total_pace">—</div>
-        <div class="proj-cell variance" id="r_ar_total_v">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <!-- CASH UPFRONT SECTION -->
-      <div class="proj-row section-header">
-        <div class="proj-cell" style="grid-column: 1/-1; padding: 7px 14px;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">UPFRONT CASH COLLECTED</span>
-        </div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">FE Cash Collected</div>
-        <div class="proj-cell"><input type="number" id="r_cash_fe_p" value="0" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_cash_fe_h">$86,765</div>
-        <div class="proj-cell auto-calc computed" id="r_cash_fe_pace">—</div>
-        <div class="proj-cell variance" id="r_cash_fe_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('FE Cash')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">BE Cash Collected</div>
-        <div class="proj-cell"><input type="number" id="r_cash_be_p" value="25200" oninput="recalcRevenue()"></div>
-        <div class="proj-cell hist-ref" id="r_cash_be_h">$23,333</div>
-        <div class="proj-cell auto-calc computed" id="r_cash_be_pace">—</div>
-        <div class="proj-cell variance" id="r_cash_be_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('BE Cash')">📝</button></div>
-      </div>
-
-      <div class="proj-row total-row" style="background:linear-gradient(90deg,rgba(251,191,36,0.08),transparent);border-top:2px solid var(--gold);">
-        <div class="proj-cell metric-name top-level" style="color:var(--gold);">⚡ GROSS REVENUE</div>
-        <div class="proj-cell auto-calc" id="r_gross_p" style="color:var(--gold);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;justify-content:flex-end;">$315,475</div>
-        <div class="proj-cell hist-ref" id="r_gross_h" style="color:var(--amber);">$396,938</div>
-        <div class="proj-cell auto-calc" id="r_gross_pace">—</div>
-        <div class="proj-cell variance" id="r_gross_v">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-    </div>
-    <!-- ADD ROW -->
-    <button class="add-row-btn" onclick="addCustomRevenueRow()">+ Add Revenue Line</button>
-
-  </div>
-
-  <!-- ─── TAB: FE SALES ─── -->
-  <div id="tab-fe-sales" class="section-content">
-
-    <div class="hist-toggle-row">
-      <span class="hist-toggle-label">Reference:</span>
-      <button class="hist-btn active" onclick="setHistRef(this,'1m')">Prior Month</button>
-      <button class="hist-btn" onclick="setHistRef(this,'3m')">3-Month Avg</button>
-      <button class="hist-btn" onclick="setHistRef(this,'6m')">6-Month Avg</button>
-    </div>
-
-    <div class="section-title"><div class="dot"></div>Closer Projections</div>
-
-    <div class="closer-table">
-      <div class="ct-header">
-        <div>CLOSER</div>
-        <div>AVAIL. SLOTS</div>
-        <div>APPROVED %</div>
-        <div>APPR. CALLS</div>
-        <div>SHOW RATE</div>
-        <div>LIVE CALLS</div>
-        <div>PROJ CLOSE %</div>
-        <div>PROJ CLOSES</div>
-        <div>PROJ REV.</div>
-      </div>
-
-      <!-- Janie -->
-      <div class="ct-row" id="ctrow-janie">
-        <div class="closer-name ct-row">Janie (Taeler)</div>
-        <div><input type="number" id="c_janie_avail" value="120" oninput="recalcClosers()"></div>
-        <div><input type="number" id="c_janie_appr" value="85" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val" id="c_janie_appr_calls">102</div>
-        <div><input type="number" id="c_janie_show" value="66" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val" id="c_janie_live">67</div>
-        <div><input type="number" id="c_janie_close" value="40" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val good" id="c_janie_closes">27</div>
-        <div class="auto-val" id="c_janie_rev">$324,000</div>
-      </div>
-
-      <!-- Samantha -->
-      <div class="ct-row" id="ctrow-sam">
-        <div class="closer-name ct-row">Samantha</div>
-        <div><input type="number" id="c_sam_avail" value="100" oninput="recalcClosers()"></div>
-        <div><input type="number" id="c_sam_appr" value="85" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val" id="c_sam_appr_calls">85</div>
-        <div><input type="number" id="c_sam_show" value="66" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val" id="c_sam_live">56</div>
-        <div><input type="number" id="c_sam_close" value="22" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val warn" id="c_sam_closes">12</div>
-        <div class="auto-val" id="c_sam_rev">$144,000</div>
-      </div>
-
-      <!-- Jason -->
-      <div class="ct-row" id="ctrow-jason">
-        <div class="closer-name ct-row">Jason</div>
-        <div><input type="number" id="c_jason_avail" value="80" oninput="recalcClosers()"></div>
-        <div><input type="number" id="c_jason_appr" value="85" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val" id="c_jason_appr_calls">68</div>
-        <div><input type="number" id="c_jason_show" value="66" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val" id="c_jason_live">45</div>
-        <div><input type="number" id="c_jason_close" value="20" oninput="recalcClosers()" step="1"></div>
-        <div class="auto-val warn" id="c_jason_closes">9</div>
-        <div class="auto-val" id="c_jason_rev">$108,000</div>
-      </div>
-
-      <!-- Totals -->
-      <div class="ct-row totals-row">
-        <div>TOTALS</div>
-        <div class="auto-val" id="ct_total_avail" style="color:var(--accent);">300</div>
-        <div>—</div>
-        <div class="auto-val" id="ct_total_appr" style="color:var(--accent);">255</div>
-        <div>—</div>
-        <div class="auto-val" id="ct_total_live" style="color:var(--accent);">168</div>
-        <div>—</div>
-        <div class="auto-val" id="ct_total_closes" style="color:var(--accent);">48</div>
-        <div class="auto-val" id="ct_total_rev" style="color:var(--gold);">$576,000</div>
-      </div>
-    </div>
-
-    <button class="add-row-btn" onclick="addCloserRow()">+ Add Closer</button>
-
-    <!-- MARKETING METRICS -->
-    <div class="section-title" style="margin-top:20px;"><div class="dot"></div>Marketing / Funnel Metrics</div>
-
-    <div class="proj-grid">
-      <div class="proj-grid-header">
-        <div>METRIC</div>
-        <div>PROJECTION</div>
-        <div id="fe-hist-col">PRIOR MONTH</div>
-        <div>PACE (auto)</div>
-        <div>% VAR</div>
-        <div>NOTES</div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Ad Spend (Client Engine VSL)</div>
-        <div class="proj-cell"><input type="number" id="fe_adspend_p" value="88000" oninput="recalcFE()"></div>
-        <div class="proj-cell hist-ref">$70,653</div>
-        <div class="proj-cell auto-calc computed" id="fe_adspend_pace">—</div>
-        <div class="proj-cell variance" id="fe_adspend_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Ad Spend')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Cost Per Lead (CPL)</div>
-        <div class="proj-cell"><input type="number" id="fe_cpl_p" value="50" oninput="recalcFE()"></div>
-        <div class="proj-cell hist-ref">$79.98</div>
-        <div class="proj-cell auto-calc" id="fe_cpl_pace">—</div>
-        <div class="proj-cell variance" id="fe_cpl_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('CPL')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">New Leads</div>
-        <div class="proj-cell auto-calc computed" id="fe_leads_calc">1,760</div>
-        <div class="proj-cell hist-ref">982</div>
-        <div class="proj-cell auto-calc" id="fe_leads_pace">—</div>
-        <div class="proj-cell variance">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Cost Per Booked Call</div>
-        <div class="proj-cell"><input type="number" id="fe_cpc_p" value="350" oninput="recalcFE()"></div>
-        <div class="proj-cell hist-ref">$401</div>
-        <div class="proj-cell auto-calc" id="fe_cpc_pace">—</div>
-        <div class="proj-cell variance" id="fe_cpc_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Cost Per Booked Call')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Total Booked Calls (Proj)</div>
-        <div class="proj-cell auto-calc computed" id="fe_booked_calc">251</div>
-        <div class="proj-cell hist-ref">176</div>
-        <div class="proj-cell auto-calc" id="fe_booked_pace">—</div>
-        <div class="proj-cell variance">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Approved Booked Calls</div>
-        <div class="proj-cell"><input type="number" id="fe_approved_p" value="215" oninput="recalcFE()"></div>
-        <div class="proj-cell hist-ref">152</div>
-        <div class="proj-cell auto-calc" id="fe_approved_pace">—</div>
-        <div class="proj-cell variance" id="fe_approved_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Approved Calls')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Show Rate</div>
-        <div class="proj-cell"><input type="number" id="fe_show_p" value="66" oninput="recalcFE()" step="1"></div>
-        <div class="proj-cell hist-ref">65.8%</div>
-        <div class="proj-cell auto-calc" id="fe_show_pace">—</div>
-        <div class="proj-cell variance" id="fe_show_v">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Live Calls</div>
-        <div class="proj-cell auto-calc computed" id="fe_live_calc">142</div>
-        <div class="proj-cell hist-ref">100</div>
-        <div class="proj-cell auto-calc" id="fe_live_pace">—</div>
-        <div class="proj-cell variance">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Target Close Rate</div>
-        <div class="proj-cell"><input type="number" id="fe_cr_p" value="25" oninput="recalcFE()" step="1"></div>
-        <div class="proj-cell hist-ref">16% (Apr)</div>
-        <div class="proj-cell auto-calc" id="fe_cr_pace">—</div>
-        <div class="proj-cell variance" id="fe_cr_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Close Rate')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Avg Contract Value (ACV)</div>
-        <div class="proj-cell"><input type="number" id="fe_acv_p" value="12500" oninput="recalcFE()"></div>
-        <div class="proj-cell hist-ref">$12,500</div>
-        <div class="proj-cell auto-calc" id="fe_acv_pace">—</div>
-        <div class="proj-cell variance" id="fe_acv_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('ACV')">📝</button></div>
-      </div>
-
-      <div class="proj-row total-row">
-        <div class="proj-cell metric-name top-level">Proj Closed Deals</div>
-        <div class="proj-cell auto-calc" id="fe_deals_calc" style="color:var(--gold);font-family:'Syne',sans-serif;font-weight:800;font-size:15px;justify-content:flex-end;">36</div>
-        <div class="proj-cell hist-ref">16 (Apr)</div>
-        <div class="proj-cell">—</div>
-        <div class="proj-cell">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row total-row" style="background:linear-gradient(90deg,rgba(251,191,36,0.08),transparent);border-top:2px solid var(--gold);">
-        <div class="proj-cell metric-name top-level" style="color:var(--gold);">Proj FE Revenue Generated</div>
-        <div class="proj-cell auto-calc" id="fe_rev_gen" style="color:var(--gold);font-family:'Syne',sans-serif;font-weight:800;font-size:15px;justify-content:flex-end;">$450,000</div>
-        <div class="proj-cell hist-ref">$177,940</div>
-        <div class="proj-cell">—</div>
-        <div class="proj-cell">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ─── TAB: SETTERS ─── -->
-  <div id="tab-setters" class="section-content">
-
-    <div class="section-title"><div class="dot"></div>Setter Projections</div>
-
-    <div class="setter-table">
-      <div class="st-header">
-        <div>SETTER</div>
-        <div>TYPE</div>
-        <div>EST. DIALS</div>
-        <div>PROJ SETS</div>
-        <div>SET RATE</div>
-        <div>LEAD SOURCE</div>
-        <div>NOTES</div>
-      </div>
-
-      <div class="st-row">
-        <div class="setter-name">Pam (Taeler IG)</div>
-        <div class="auto-val">Organic</div>
-        <div><input type="number" id="s_pam_dials" value="300" oninput="recalcSetters()"></div>
-        <div><input type="number" id="s_pam_sets" value="25" oninput="recalcSetters()"></div>
-        <div class="auto-val" id="s_pam_rate">8.3%</div>
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">Taeler IG DMs</div>
-        <div><button class="notes-btn" onclick="openNotes('Pam')">📝</button></div>
-      </div>
-
-      <div class="st-row">
-        <div class="setter-name">Andrea</div>
-        <div class="auto-val">Organic</div>
-        <div><input type="number" id="s_andrea_dials" value="250" oninput="recalcSetters()"></div>
-        <div><input type="number" id="s_andrea_sets" value="20" oninput="recalcSetters()"></div>
-        <div class="auto-val" id="s_andrea_rate">8.0%</div>
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">IFCA IG / TBD</div>
-        <div><button class="notes-btn" onclick="openNotes('Andrea')">📝</button></div>
-      </div>
-
-      <div class="st-row">
-        <div class="setter-name">Inbound (Aloware)</div>
-        <div class="auto-val">Paid</div>
-        <div><input type="number" id="s_inbound_dials" value="500" oninput="recalcSetters()"></div>
-        <div><input type="number" id="s_inbound_sets" value="70" oninput="recalcSetters()"></div>
-        <div class="auto-val" id="s_inbound_rate">14.0%</div>
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">VSL Leads → Aloware</div>
-        <div><button class="notes-btn" onclick="openNotes('Inbound Aloware')">📝</button></div>
-      </div>
-
-      <div class="st-row totals-row">
-        <div>TOTALS</div>
-        <div>—</div>
-        <div class="auto-val" id="st_total_dials" style="color:var(--accent);">1,050</div>
-        <div class="auto-val" id="st_total_sets" style="color:var(--accent);">115</div>
-        <div class="auto-val" id="st_avg_rate" style="color:var(--accent);">11.0%</div>
-        <div>—</div>
-        <div>—</div>
-      </div>
-    </div>
-
-    <button class="add-row-btn" onclick="addSetterRow()">+ Add Setter</button>
-
-    <!-- SETTER NOTES -->
-    <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px;">
-      <div class="section-title" style="margin-bottom:10px;"><div class="dot"></div>Setter Target</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
-        <div class="sum-card">
-          <div class="sum-card-label">Target Booked Sets / Mo</div>
-          <div class="sum-card-value">115–130</div>
-          <div class="sum-card-compare">KPI from projections history</div>
-        </div>
-        <div class="sum-card">
-          <div class="sum-card-label">Apr Actuals</div>
-          <div class="sum-card-value">48</div>
-          <div class="sum-card-compare"><span class="dn">⚠ 57 below target</span></div>
-        </div>
-        <div class="sum-card">
-          <div class="sum-card-label">May Proj Sets</div>
-          <div class="sum-card-value" id="setter-proj-total">115</div>
-          <div class="sum-card-compare" id="setter-vs-kpi">— vs 115 target</div>
-        </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:var(--white)">3. BE Upsell Pipeline</span><span class="badge bm">Cory owns · feed pending</span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:0%;background:var(--purple)"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Legacy + 7FCEO + Cont · SC referral pipeline</div>
       </div>
     </div>
   </div>
 
-  <!-- ─── TAB: BE SALES ─── -->
-  <div id="tab-be-sales" class="section-content">
-
-    <div class="section-title"><div class="dot"></div>Backend Upsell Projections</div>
-
-    <div class="proj-grid">
-      <div class="proj-grid-header">
-        <div>METRIC</div>
-        <div>PROJECTION</div>
-        <div>PRIOR MONTH</div>
-        <div>PACE (auto)</div>
-        <div>% VAR</div>
-        <div>NOTES</div>
+  <div class="section-title"><div class="dot"></div>Data Pillar Status</div>
+  <div class="four-col">
+    <a href="ads/index.html" style="text-decoration:none">
+      <div class="pbox" style="cursor:pointer" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:22px">📣</span><span class="stag stag-pending">Partial</span></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--white);margin-bottom:3px">Ads Performance</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Hyros + Meta MCP</div>
+        <div style="font-size:11px;color:var(--amber)">Meta MCP: Craig to connect · Hyros: API key needed</div>
       </div>
-
-      <div class="proj-row section-header">
-        <div class="proj-cell" style="grid-column:1/-1;padding:7px 14px;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">ACTIVE CLIENT BASE</span>
-        </div>
+    </a>
+    <a href="sales/index.html" style="text-decoration:none">
+      <div class="pbox" style="cursor:pointer" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:22px">📞</span><span class="stag stag-pending">Pending</span></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--white);margin-bottom:3px">Sales (FE)</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">PIF Perfect API</div>
+        <div style="font-size:11px;color:var(--amber)">Get PIF API key → build Apps Script sync</div>
       </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Total Active 1:1 Clients</div>
-        <div class="proj-cell"><input type="number" id="be_active_p" value="170" oninput="recalcBE()"></div>
-        <div class="proj-cell hist-ref">194 (Apr start)</div>
-        <div class="proj-cell auto-calc" id="be_active_pace">—</div>
-        <div class="proj-cell variance" id="be_active_v">—</div>
-        <div class="proj-cell"></div>
+    </a>
+    <a href="backend/index.html" style="text-decoration:none">
+      <div class="pbox" style="cursor:pointer" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:22px">📈</span><span class="stag stag-pending">Pending</span></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--white);margin-bottom:3px">Back-End Upsells</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Google Sheets (Kevin)</div>
+        <div style="font-size:11px;color:var(--amber)">Kevin migrates tracker to live Google Sheet</div>
       </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Upsell Conversion % (Proj)</div>
-        <div class="proj-cell"><input type="number" id="be_ucr_p" value="40" oninput="recalcBE()" step="1"></div>
-        <div class="proj-cell hist-ref">40.7% (Apr)</div>
-        <div class="proj-cell auto-calc" id="be_ucr_pace">—</div>
-        <div class="proj-cell variance" id="be_ucr_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Upsell Conversion Rate')">📝</button></div>
+    </a>
+    <a href="projections/index.html" style="text-decoration:none">
+      <div class="pbox" style="cursor:pointer" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:22px">🎯</span><span class="stag stag-built">Built</span></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--white);margin-bottom:3px">Projections</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Calculated layer (HTML)</div>
+        <div style="font-size:11px;color:var(--green)">Calculator live · connect live feeds next</div>
       </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Pitched Conversion % (Proj)</div>
-        <div class="proj-cell"><input type="number" id="be_pcr_p" value="50" oninput="recalcBE()" step="1"></div>
-        <div class="proj-cell hist-ref">50% (Apr)</div>
-        <div class="proj-cell auto-calc" id="be_pcr_pace">—</div>
-        <div class="proj-cell variance" id="be_pcr_v">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row section-header">
-        <div class="proj-cell" style="grid-column:1/-1;padding:7px 14px;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">UPSELL CLOSES (BY PRODUCT)</span>
-        </div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Legacy Closes</div>
-        <div class="proj-cell"><input type="number" id="be_legacy_p" value="6" oninput="recalcBE()"></div>
-        <div class="proj-cell hist-ref">3 (Apr)</div>
-        <div class="proj-cell auto-calc" id="be_legacy_pace">—</div>
-        <div class="proj-cell variance" id="be_legacy_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Legacy Closes')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">7 Figure CEO Closes</div>
-        <div class="proj-cell"><input type="number" id="be_7fig_p" value="2" oninput="recalcBE()"></div>
-        <div class="proj-cell hist-ref">1 (Apr)</div>
-        <div class="proj-cell auto-calc" id="be_7fig_pace">—</div>
-        <div class="proj-cell variance" id="be_7fig_v">—</div>
-        <div class="proj-cell"><button class="notes-btn" onclick="openNotes('7FCEO Closes')">📝</button></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">Continuation Closes</div>
-        <div class="proj-cell"><input type="number" id="be_cont_p" value="5" oninput="recalcBE()"></div>
-        <div class="proj-cell hist-ref">5 (Apr)</div>
-        <div class="proj-cell auto-calc" id="be_cont_pace">—</div>
-        <div class="proj-cell variance" id="be_cont_v">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row section-header">
-        <div class="proj-cell" style="grid-column:1/-1;padding:7px 14px;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">SUCCESS COACH REFERRALS</span>
-        </div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">SC #1 (10 Referrals → 7 → 4 sales)</div>
-        <div class="proj-cell"><input type="number" id="be_sc1_sales" value="4" oninput="recalcBE()"></div>
-        <div class="proj-cell hist-ref">4 (Apr)</div>
-        <div class="proj-cell auto-calc" id="be_sc1_pace">—</div>
-        <div class="proj-cell variance">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row">
-        <div class="proj-cell metric-name">SC #2 (8 Referrals → 8 → 4 sales)</div>
-        <div class="proj-cell"><input type="number" id="be_sc2_sales" value="4" oninput="recalcBE()"></div>
-        <div class="proj-cell hist-ref">4 (Apr)</div>
-        <div class="proj-cell auto-calc" id="be_sc2_pace">—</div>
-        <div class="proj-cell variance">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-      <div class="proj-row total-row" style="background:linear-gradient(90deg,rgba(251,191,36,0.08),transparent);border-top:2px solid var(--gold);">
-        <div class="proj-cell metric-name top-level" style="color:var(--gold);">Proj BE Revenue Generated</div>
-        <div class="proj-cell auto-calc" id="be_rev_total" style="color:var(--gold);font-family:'Syne',sans-serif;font-weight:800;font-size:15px;justify-content:flex-end;">$248,000</div>
-        <div class="proj-cell hist-ref">$57,000 (Apr)</div>
-        <div class="proj-cell">—</div>
-        <div class="proj-cell">—</div>
-        <div class="proj-cell"></div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- ─── TAB: CAMPAIGNS ─── -->
-  <div id="tab-campaigns" class="section-content">
-
-    <div class="section-title"><div class="dot"></div>Active Q2 Campaigns — May Impact</div>
-
-    <div class="campaign-table">
-      <div class="camp-header">
-        <div>CAMPAIGN</div>
-        <div>TYPE</div>
-        <div>PROJ LEADS</div>
-        <div>PROJ CALLS</div>
-        <div>PROJ CLOSES</div>
-        <div>LAUNCH DATE / NOTES</div>
-      </div>
-
-      <div class="camp-row">
-        <div class="camp-name">Transfer of Trust (TOT)</div>
-        <div><span class="tag tag-organic">Organic</span></div>
-        <div><input type="number" value="400" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="30" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="8" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">Internal May 11 → Public May 18. Podcast + 4 reels. FCA trust transfer.</div>
-      </div>
-
-      <div class="camp-row">
-        <div class="camp-name">VSL (Client Engine)</div>
-        <div><span class="tag tag-paid">Paid</span></div>
-        <div><input type="number" value="1200" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="115" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="25" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">New VSL (Taeler story). Ads resume ~May 16. $88K budget. Target CPL $38–50.</div>
-      </div>
-
-      <div class="camp-row">
-        <div class="camp-name">Joint Masterclass / Webinar</div>
-        <div><span class="tag tag-event">Event</span></div>
-        <div><input type="number" value="500" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="40" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="10" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">June 11, 7pm ET. Taeler hosts. Ads start May 16. Organic promo May 19. Selling Accelerator at $12,500.</div>
-      </div>
-
-      <div class="camp-row">
-        <div class="camp-name">Scholarship / Impact Fund</div>
-        <div><span class="tag tag-paid">Paid</span></div>
-        <div><input type="number" value="300" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="25" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div><input type="number" value="5" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">Ads June 17–18. Full deploy June 21. Use "Grant"/"Impact Fund" language. 2–3 weeks post-webinar.</div>
-      </div>
-    </div>
-
-    <button class="add-row-btn" onclick="addCampaignRow()">+ Add Campaign</button>
-
-    <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px;">
-      <div class="section-title" style="margin-bottom:10px;"><div class="dot"></div>Ad Budget Summary</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
-        <div class="sum-card">
-          <div class="sum-card-label">Total Ad Budget (May)</div>
-          <div class="sum-card-value">$88,000</div>
-        </div>
-        <div class="sum-card">
-          <div class="sum-card-label">Target CPL</div>
-          <div class="sum-card-value">$38–50</div>
-          <div class="sum-card-compare"><span class="dn">Apr: $79.98</span></div>
-        </div>
-        <div class="sum-card">
-          <div class="sum-card-label">Target CPA</div>
-          <div class="sum-card-value">$2,000</div>
-          <div class="sum-card-compare"><span class="dn">Apr: $4,910</span></div>
-        </div>
-        <div class="sum-card highlight">
-          <div class="sum-card-label">Target Booked Calls</div>
-          <div class="sum-card-value">115–130</div>
-          <div class="sum-card-compare"><span class="dn">Apr: 48 setter sets</span></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ─── TAB: HISTORY ─── -->
-  <div id="tab-history" class="section-content">
-
-    <div class="section-title"><div class="dot"></div>Historical Performance Reference</div>
-
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px;">
-        <thead>
-          <tr style="background:var(--panel3);border-bottom:1px solid var(--border);">
-            <th style="padding:10px 14px;text-align:left;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">MONTH</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">GROSS REV</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">FE CASH</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">BE CASH</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">TOTAL MRR</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">BOOKED SETS</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">LIVE CALLS</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">CLOSE RATE</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">CLOSES</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">AD SPEND</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">CPL</th>
-            <th style="padding:10px 14px;text-align:right;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">CPA</th>
-          </tr>
-        </thead>
-        <tbody id="historyTable"></tbody>
-      </table>
-    </div>
-
-    <!-- AVG ROWS -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px;">
-      <div class="sum-card" style="border-color:var(--blue);">
-        <div class="sum-card-label">1-Month Avg (Apr)</div>
-        <div class="sum-card-value">$446,242</div>
-        <div class="sum-card-compare">Gross Revenue</div>
-      </div>
-      <div class="sum-card" style="border-color:var(--purple);">
-        <div class="sum-card-label">3-Month Avg (Feb–Apr)</div>
-        <div class="sum-card-value">$430,041</div>
-        <div class="sum-card-compare">Gross Revenue</div>
-      </div>
-      <div class="sum-card" style="border-color:var(--green);">
-        <div class="sum-card-label">6-Month Avg (Nov–Apr)</div>
-        <div class="sum-card-value">$486,520</div>
-        <div class="sum-card-compare">Gross Revenue (est.)</div>
-      </div>
-      <div class="sum-card highlight">
-        <div class="sum-card-label">May Target</div>
-        <div class="sum-card-value">$550,000</div>
-        <div class="sum-card-compare">Lookback Floor</div>
-      </div>
-    </div>
-
-  </div>
-
-</div><!-- /main -->
-
-<!-- NOTES MODAL -->
-<div class="modal-overlay" id="notesModal">
-  <div class="modal">
-    <div class="modal-title" id="notesModalTitle">Add Notes</div>
-    <textarea id="notesModalText" placeholder="Add context, assumptions, or owner notes..."></textarea>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeNotes()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveNotes()">Save Note</button>
-    </div>
+    </a>
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="confirm-toast" id="toast">✓ Projections saved</div>
+<!-- ADS -->
+<div id="view-ads" class="view">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">MTD Ad Spend</div><div class="kpi-value">—</div><div class="kpi-sub">Budget: $88K/mo · IFCA act: 623048835231084</div></div>
+    <div class="kpi-card warn"><div class="kpi-label">Cost Per Lead (CPL)</div><div class="kpi-value" style="color:var(--red)">—</div><div class="kpi-sub">Target: $38–50 · Apr: $79.98</div></div>
+    <div class="kpi-card"><div class="kpi-label">Cost / Booked Call</div><div class="kpi-value">—</div><div class="kpi-sub">Target: $350 · Apr: $401</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Leads MTD</div><div class="kpi-value">—</div><div class="kpi-sub">Hyros primary attribution</div></div>
+    <div class="kpi-card"><div class="kpi-label">ROAS (Collected)</div><div class="kpi-value">—</div><div class="kpi-sub">Hyros scientific report</div></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="section-title"><div class="dot"></div>Hyros Attribution <span class="stag stag-pending" style="margin-left:6px">API Key Needed</span></div>
+      <div class="ph"><div class="ph-icon">📊</div><div class="ph-title">Hyros Scientific Reporting</div><div class="ph-text">Primary attribution source. Generate API key in Hyros → Account Settings → API. Configure nightly CSV email export via Scientific Reporting, or connect via Zapier automation.</div><code>Step 1: Hyros account → Settings → API → Generate key</code></div>
+    </div>
+    <div>
+      <div class="section-title"><div class="dot"></div>Meta Ads MCP <span class="stag stag-pending" style="margin-left:6px">Craig to Connect</span></div>
+      <div class="ph"><div class="ph-icon">📱</div><div class="ph-title">Meta Official MCP (April 29, 2026)</div><div class="ph-text">Craig opens Claude Desktop → Settings → Developer → Edit Config. Add meta-ads server URL. Authenticate with Business OAuth. ~7 min total.</div><code>docs/integration-setup-guide.html for full steps</code></div>
+    </div>
+  </div>
+  <div class="section-title"><div class="dot"></div>Funnel Economics</div>
+  <div class="dt">
+    <div class="dth" style="grid-template-columns:180px repeat(5,1fr)"><div>Campaign</div><div>Spend</div><div>Leads</div><div>CPL</div><div>Booked Calls</div><div>CPA</div></div>
+    <div class="dtr" style="grid-template-columns:180px repeat(5,1fr)"><div class="dtc nm">VSL — Client Engine</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:180px repeat(5,1fr)"><div class="dtc nm">TOT — Organic</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:180px repeat(5,1fr)"><div class="dtc nm">Masterclass Jun 11</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+  </div>
+</div>
 
+<!-- SALES -->
+<div id="view-sales" class="view">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Sets Booked MTD</div><div class="kpi-value" style="color:var(--amber)">—</div><div class="kpi-sub">Target: 115–130/mo</div></div>
+    <div class="kpi-card"><div class="kpi-label">Live Calls MTD</div><div class="kpi-value">—</div><div class="kpi-sub">Approved → showed</div></div>
+    <div class="kpi-card warn"><div class="kpi-label">Close Rate MTD</div><div class="kpi-value" style="color:var(--red)">—</div><div class="kpi-sub">Target: 25% · Apr: 16%</div></div>
+    <div class="kpi-card good"><div class="kpi-label">Closed Deals MTD</div><div class="kpi-value" style="color:var(--green)">—</div><div class="kpi-sub">@ $12,500 ACV</div></div>
+    <div class="kpi-card hl"><div class="kpi-label">FE Revenue Generated</div><div class="kpi-value" style="color:var(--gold)">—</div><div class="kpi-sub">From PIF Perfect</div></div>
+  </div>
+  <div class="section-title"><div class="dot"></div>Closer Performance <span class="stag stag-pending" style="margin-left:6px">PIF API Pending</span></div>
+  <div class="dt">
+    <div class="dth" style="grid-template-columns:150px repeat(7,1fr)"><div>Closer</div><div>Slots</div><div>Appr. Calls</div><div>Show %</div><div>Live</div><div>Closes</div><div>CR%</div><div>Revenue</div></div>
+    <div class="dtr" style="grid-template-columns:150px repeat(7,1fr)"><div class="dtc nm">Janie (Taeler)</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono"><span class="badge bg">~40%</span></div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:150px repeat(7,1fr)"><div class="dtc nm">Samantha</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:150px repeat(7,1fr)"><div class="dtc nm">Jason</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dttot" style="grid-template-columns:150px repeat(7,1fr)"><div>TOTALS</div><div>—</div><div>—</div><div>—</div><div>—</div><div>—</div><div>—</div><div>—</div></div>
+  </div>
+  <div class="section-title"><div class="dot"></div>Setter Performance <span class="stag stag-pending" style="margin-left:6px">PIF API Pending</span></div>
+  <div class="dt">
+    <div class="dth" style="grid-template-columns:150px repeat(4,1fr) 120px"><div>Setter</div><div>Dials</div><div>Sets</div><div>Set Rate</div><div>Lead Source</div><div>Status</div></div>
+    <div class="dtr" style="grid-template-columns:150px repeat(4,1fr) 120px"><div class="dtc nm">Pam</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc">Taeler IG DMs</div><div class="dtc"><span class="badge bg">Active</span></div></div>
+    <div class="dtr" style="grid-template-columns:150px repeat(4,1fr) 120px"><div class="dtc nm">Andrea</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc">IFCA IG / TBD</div><div class="dtc"><span class="badge ba">Placement TBD</span></div></div>
+    <div class="dtr" style="grid-template-columns:150px repeat(4,1fr) 120px"><div class="dtc nm">Inbound Aloware</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc">VSL Leads (Paid)</div><div class="dtc"><span class="badge bb">Paid</span></div></div>
+    <div class="dttot" style="grid-template-columns:150px repeat(4,1fr) 120px"><div>TOTALS</div><div>—</div><div>—</div><div>—</div><div>—</div><div>—</div></div>
+  </div>
+</div>
+
+<!-- BACKEND -->
+<div id="view-backend" class="view">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Legacy Closes MTD</div><div class="kpi-value">—</div><div class="kpi-sub">Avg $22–25K · Path to 4% (Jul 1)</div></div>
+    <div class="kpi-card"><div class="kpi-label">7-Figure CEO Closes</div><div class="kpi-value">—</div><div class="kpi-sub">Avg $30–35K</div></div>
+    <div class="kpi-card"><div class="kpi-label">Continuation Closes</div><div class="kpi-value">—</div><div class="kpi-sub">Avg $6K</div></div>
+    <div class="kpi-card"><div class="kpi-label">BE Revenue Generated</div><div class="kpi-value">—</div><div class="kpi-sub">Apr: $57K</div></div>
+    <div class="kpi-card hl"><div class="kpi-label">BE Cash Collected</div><div class="kpi-value" style="color:var(--gold)">—</div><div class="kpi-sub">Apr: $23,333</div></div>
+  </div>
+  <div class="section-title"><div class="dot"></div>SC Referral Pipeline <span class="stag stag-pending" style="margin-left:6px">Kevin to migrate tracker</span></div>
+  <div class="dt">
+    <div class="dth" style="grid-template-columns:160px repeat(5,1fr)"><div>Success Coach</div><div>Active Clients</div><div>Referrals Out</div><div>Pitched</div><div>Closed</div><div>Revenue</div></div>
+    <div class="dtr" style="grid-template-columns:160px repeat(5,1fr)"><div class="dtc nm">Kevin Hamidi (Head SC)</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:160px repeat(5,1fr)"><div class="dtc nm">SC #2</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:160px repeat(5,1fr)"><div class="dtc nm">SC #3</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dttot" style="grid-template-columns:160px repeat(5,1fr)"><div>TOTALS</div><div>—</div><div>—</div><div>—</div><div>—</div><div>—</div></div>
+  </div>
+  <div class="section-title"><div class="dot"></div>MRR Breakdown</div>
+  <div class="dt">
+    <div class="dth" style="grid-template-columns:200px 1fr 1fr 1fr"><div>Stream</div><div>Monthly Proj</div><div>Apr Actual</div><div>Notes</div></div>
+    <div class="dtr" style="grid-template-columns:200px 1fr 1fr 1fr"><div class="dtc nm">Continuity</div><div class="dtc mono">$21,000</div><div class="dtc mono">$20,067</div><div class="dtc" style="font-size:11px;color:var(--muted)">May proj</div></div>
+    <div class="dtr" style="grid-template-columns:200px 1fr 1fr 1fr"><div class="dtc nm">Trainerize</div><div class="dtc mono">$25,000</div><div class="dtc mono">$24,863</div><div class="dtc" style="font-size:11px;color:var(--muted)">May proj</div></div>
+    <div class="dtr" style="grid-template-columns:200px 1fr 1fr 1fr"><div class="dtc nm">GHL SaaS</div><div class="dtc mono">$27,000</div><div class="dtc mono">$33,257</div><div class="dtc" style="font-size:11px;color:var(--muted)">$97/mo · 450+ coaches</div></div>
+    <div class="dtr" style="grid-template-columns:200px 1fr 1fr 1fr"><div class="dtc nm">7FCEO Memberships</div><div class="dtc mono">$15,000</div><div class="dtc mono">$15,000</div><div class="dtc" style="font-size:11px;color:var(--muted)">Stable</div></div>
+    <div class="dttot" style="grid-template-columns:200px 1fr 1fr 1fr"><div>TOTAL MRR</div><div>$88,000</div><div>$93,187</div><div>—</div></div>
+  </div>
+</div>
+
+<!-- PROJECTIONS -->
+<div id="view-projections" class="view">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div class="section-title" style="margin-bottom:0"><div class="dot"></div>Monthly Projections — May 2026</div>
+    <a href="projections/index.html" style="background:var(--accent);color:#07101e;padding:8px 18px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:.05em">Open Full Calculator →</a>
+  </div>
+  <div class="three-col">
+    <div class="pbox"><div class="kpi-label">Total MRR (Proj)</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px;color:var(--white)">$88,000</div><div class="prog-wrap"><div class="prog-lbl"><span>vs $93K Apr actual</span><span>94.6%</span></div><div class="prog-track"><div class="prog-fill pa" style="width:94.6%"></div></div></div></div>
+    <div class="pbox"><div class="kpi-label">AR Collections (Proj)</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px;color:var(--white)">$202,275</div><div style="font-size:11px;color:var(--muted);margin-top:4px">LK $1.8K + FE AR $102K + BE AR $98K</div></div>
+    <div class="pbox"><div class="kpi-label">Upfront Cash (FE+BE)</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px;color:var(--white)">$25,200</div><div style="font-size:11px;color:var(--muted);margin-top:4px">FE: $0 · BE: $25.2K</div></div>
+  </div>
+  <div class="pbox" style="background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(56,189,248,.04));border-color:rgba(251,191,36,.3);margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div><div class="kpi-label" style="color:var(--gold)">Projected Gross Revenue — May 2026</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--gold)">$315,475</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Gap: <span style="color:var(--gold);font-weight:700">$234,525</span> · Updates when live feeds connected</div></div>
+      <div style="text-align:right"><div class="kpi-label">Lookback Floor</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:24px;color:var(--white)">$550,000</div></div>
+    </div>
+    <div class="prog-wrap"><div class="prog-lbl"><span>May Proj vs $550K</span><span>57.4%</span></div><div class="prog-track" style="height:10px"><div class="prog-fill pgold" style="width:57.4%"></div></div></div>
+  </div>
+  <div class="section-title"><div class="dot"></div>Historical Reference</div>
+  <div class="dt">
+    <div class="dth" style="grid-template-columns:120px repeat(7,1fr)"><div>Month</div><div>Gross Rev</div><div>FE Cash</div><div>BE Cash</div><div>MRR</div><div>Closes</div><div>CR%</div><div>CPL</div></div>
+    <div class="dtr" style="grid-template-columns:120px repeat(7,1fr)"><div class="dtc nm">Jan 2026</div><div class="dtc mono">$452,387</div><div class="dtc mono">$134,900</div><div class="dtc mono">$65,000</div><div class="dtc mono">—</div><div class="dtc mono">24</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:120px repeat(7,1fr)"><div class="dtc nm">Feb 2026</div><div class="dtc mono">$411,586</div><div class="dtc mono">$131,758</div><div class="dtc mono">$55,333</div><div class="dtc mono">—</div><div class="dtc mono">23</div><div class="dtc mono">—</div><div class="dtc mono">—</div></div>
+    <div class="dtr" style="grid-template-columns:120px repeat(7,1fr)"><div class="dtc nm">Mar 2026</div><div class="dtc mono">$446,242</div><div class="dtc mono">$140,275</div><div class="dtc mono">$64,000</div><div class="dtc mono">$92,822</div><div class="dtc mono">25</div><div class="dtc mono"><span class="badge ba">21.9%</span></div><div class="dtc mono"><span class="badge ba">$66.82</span></div></div>
+    <div class="dtr" style="grid-template-columns:120px repeat(7,1fr)"><div class="dtc nm" style="color:var(--accent)">Apr 2026</div><div class="dtc mono">$396,938</div><div class="dtc mono">$86,765</div><div class="dtc mono">$23,333</div><div class="dtc mono">$93,186</div><div class="dtc mono">16</div><div class="dtc mono"><span class="badge br">16.0%</span></div><div class="dtc mono"><span class="badge br">$79.98</span></div></div>
+    <div class="dttot" style="grid-template-columns:120px repeat(7,1fr)"><div>3-Mo Avg</div><div>$418,255</div><div>$120,266</div><div>$47,555</div><div>$93,004</div><div>21</div><div>19.0%</div><div>$73.40</div></div>
+  </div>
+</div>
+
+</div>
 <script>
-// ─── HISTORICAL DATA ───────────────────────────────────────────────
-const histData = [
-  { month:'Jan 2026', gross:452387, feCash:134900, beCash:65000, mrr:null, bookedSets:null, liveCalls:null, closeRate:null, closes:24, adSpend:null, cpl:null, cpa:null },
-  { month:'Feb 2026', gross:411586, feCash:131758, beCash:55333, mrr:null, bookedSets:null, liveCalls:null, closeRate:null, closes:23, adSpend:null, cpl:null, cpa:null },
-  { month:'Mar 2026', gross:446242, feCash:140275, beCash:64000, mrr:92822, bookedSets:95, liveCalls:114, closeRate:0.219, closes:25, adSpend:75328, cpl:66.82, cpa:null },
-  { month:'Apr 2026', gross:396938, feCash:86765, beCash:23333, mrr:93186, bookedSets:48, liveCalls:100, closeRate:0.16, closes:16, adSpend:70653, cpl:79.98, cpa:4910 },
-];
-
-const avgsData = {
-  '1m': { gross:396938, feCash:86765, beCash:23333, mrr:93186, booked:48, live:100, cr:0.16, closes:16, adSpend:70653, cpl:79.98 },
-  '3m': { gross:418255, feCash:120266, beCash:47555, mrr:93004, booked:72, live:107, cr:0.19, closes:21, adSpend:72991, cpl:73.4 },
-  '6m': { gross:486520, feCash:148000, beCash:52000, mrr:90000, booked:85, live:115, cr:0.22, closes:28, adSpend:78000, cpl:60 },
-};
-
-let currentRef = '1m';
-let notesStore = {};
-let currentNotesKey = '';
-let customRevenueRows = 0;
-let closerRowCount = 3;
-let setterRowCount = 3;
-
-function fmt(n, prefix='$') {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  return prefix + Math.round(n).toLocaleString();
+function showView(n,b){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+n).classList.add('active');
+  b.classList.add('active');
 }
-
-function pct(n) {
-  if (n === null || isNaN(n)) return '—';
-  return (n * 100).toFixed(1) + '%';
-}
-
-function variance(proj, actual) {
-  if (!actual || !proj) return '—';
-  const v = (proj - actual) / actual;
-  const sign = v >= 0 ? '+' : '';
-  return sign + (v * 100).toFixed(1) + '%';
-}
-
-// ─── HISTORY TABLE ─────────────────────────────────────────────────
-function buildHistoryTable() {
-  const tbody = document.getElementById('historyTable');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-
-  histData.forEach(r => {
-    const tr = document.createElement('tr');
-    tr.style.cssText = 'border-bottom:1px solid var(--border);';
-    tr.onmouseover = () => tr.style.background = 'rgba(56,189,248,0.03)';
-    tr.onmouseout = () => tr.style.background = '';
-
-    const targetGap = 550000 - r.gross;
-    const gapColor = targetGap <= 0 ? 'var(--green)' : 'var(--red)';
-
-    const cells = [
-      `<td style="padding:9px 14px;color:var(--white);font-weight:600;">${r.month}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:${r.gross >= 550000 ? 'var(--green)' : r.gross >= 450000 ? 'var(--amber)' : 'var(--red)'};">${fmt(r.gross)}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${fmt(r.feCash)}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${fmt(r.beCash)}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${fmt(r.mrr)}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${r.bookedSets || '—'}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${r.liveCalls || '—'}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:${r.closeRate >= 0.25 ? 'var(--green)' : r.closeRate >= 0.20 ? 'var(--amber)' : 'var(--red)'};">${r.closeRate ? pct(r.closeRate) : '—'}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${r.closes || '—'}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${fmt(r.adSpend)}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:${r.cpl && r.cpl <= 50 ? 'var(--green)' : r.cpl && r.cpl <= 70 ? 'var(--amber)' : 'var(--red)'};">${r.cpl ? '$' + r.cpl : '—'}</td>`,
-      `<td style="padding:9px 14px;text-align:right;color:var(--text);">${fmt(r.cpa)}</td>`,
-    ];
-    tr.innerHTML = cells.join('');
-    tbody.appendChild(tr);
-  });
-}
-
-// ─── HISTORY REF TOGGLE ────────────────────────────────────────────
-function setHistRef(btn, ref) {
-  document.querySelectorAll('.hist-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.hist-btn').forEach(b => { if (b.innerText === btn.innerText) b.classList.add('active'); });
-  btn.classList.add('active');
-  currentRef = ref;
-
-  const d = avgsData[ref];
-  const lbl = ref === '1m' ? 'Prior Month Actual' : ref === '3m' ? '3-Month Avg' : '6-Month Avg';
-
-  document.querySelectorAll('[id$="-hist-col"]').forEach(el => el.innerText = lbl);
-  document.getElementById('rh-col1-lbl').innerText = lbl;
-
-  // Update history reference cells
-  const refs = {
-    r_mrr_cont_h: ref === '1m' ? '$20,067' : ref === '3m' ? '$21,900' : '$22,500',
-    r_mrr_trnz_h: ref === '1m' ? '$24,863' : ref === '3m' ? '$25,350' : '$26,000',
-    r_mrr_ghl_h:  ref === '1m' ? '$33,257' : ref === '3m' ? '$31,350' : '$29,000',
-    r_mrr_7fig_h: ref === '1m' ? '$15,000' : ref === '3m' ? '$15,000' : '$16,000',
-    r_mrr_total_h:ref === '1m' ? '$93,186' : ref === '3m' ? '$93,600' : '$93,500',
-    r_ar_lk_h:    ref === '1m' ? '$2,000'  : ref === '3m' ? '$2,300'  : '$3,200',
-    r_ar_fe_h:    ref === '1m' ? '$105,874': ref === '3m' ? '$101,366': '$95,000',
-    r_ar_be_h:    ref === '1m' ? '$85,780' : ref === '3m' ? '$75,152' : '$65,000',
-    r_ar_total_h: ref === '1m' ? '$193,654': ref === '3m' ? '$178,818': '$163,200',
-    r_cash_fe_h:  ref === '1m' ? '$86,765' : ref === '3m' ? '$120,266': '$148,000',
-    r_cash_be_h:  ref === '1m' ? '$23,333' : ref === '3m' ? '$47,555' : '$52,000',
-    r_gross_h:    ref === '1m' ? '$396,938': ref === '3m' ? '$418,255': '$486,520',
-  };
-
-  Object.entries(refs).forEach(([id, val]) => {
-    const el = document.getElementById(id);
-    if (el) el.innerText = val;
-  });
-
-  recalcRevenue();
-}
-
-// ─── RECALC REVENUE ────────────────────────────────────────────────
-function recalcRevenue() {
-  const days = 31;
-  const daysPast = 3;
-  const daysLeft = days - daysPast;
-
-  // MRR
-  const mrrCont = +document.getElementById('r_mrr_cont_p').value || 0;
-  const mrrTrnz = +document.getElementById('r_mrr_trnz_p').value || 0;
-  const mrrGhl  = +document.getElementById('r_mrr_ghl_p').value || 0;
-  const mrr7fig = +document.getElementById('r_mrr_7fig_p').value || 0;
-  const totalMRR = mrrCont + mrrTrnz + mrrGhl + mrr7fig;
-
-  document.getElementById('r_mrr_total_p').innerText = fmt(totalMRR);
-
-  // AR
-  const arLK = +document.getElementById('r_ar_lk_p').value || 0;
-  const arFE = +document.getElementById('r_ar_fe_p').value || 0;
-  const arBE = +document.getElementById('r_ar_be_p').value || 0;
-  const totalAR = arLK + arFE + arBE;
-  document.getElementById('r_ar_total_p').innerText = fmt(totalAR);
-
-  // Cash
-  const cashFE = +document.getElementById('r_cash_fe_p').value || 0;
-  const cashBE = +document.getElementById('r_cash_be_p').value || 0;
-
-  // Gross
-  const gross = totalMRR + totalAR + cashFE + cashBE;
-  document.getElementById('r_gross_p').innerText = fmt(gross);
-
-  // Summary cards
-  document.getElementById('sc-mrr').innerText = fmt(totalMRR);
-  document.getElementById('sc-ar').innerText = fmt(totalAR);
-  document.getElementById('sc-fe').innerText = fmt(cashFE);
-  document.getElementById('sc-be').innerText = fmt(cashBE);
-  document.getElementById('sc-gross').innerText = fmt(gross);
-
-  // Gap
-  const gap = 550000 - gross;
-  const gapEl = document.getElementById('targetGap');
-  if (gapEl) {
-    gapEl.innerText = fmt(Math.abs(gap));
-    gapEl.style.color = gap <= 0 ? 'var(--green)' : 'var(--gold)';
-  }
-
-  document.getElementById('currentProjTotal').innerText = fmt(gross);
-  recalcFE();
-}
-
-// ─── RECALC FE ─────────────────────────────────────────────────────
-function recalcFE() {
-  const adSpend = +document.getElementById('fe_adspend_p').value || 0;
-  const cpl     = +document.getElementById('fe_cpl_p').value || 1;
-  const cpc     = +document.getElementById('fe_cpc_p').value || 1;
-  const approved= +document.getElementById('fe_approved_p').value || 0;
-  const showRatePct = +document.getElementById('fe_show_p').value || 66;
-  const crPct   = +document.getElementById('fe_cr_p').value || 25;
-  const acv     = +document.getElementById('fe_acv_p').value || 12500;
-
-  const leads   = adSpend / cpl;
-  const booked  = adSpend / cpc;
-  const live    = approved * (showRatePct / 100);
-  const deals   = live * (crPct / 100);
-  const revGen  = deals * acv;
-
-  document.getElementById('fe_leads_calc').innerText = Math.round(leads).toLocaleString();
-  document.getElementById('fe_booked_calc').innerText = Math.round(booked).toLocaleString();
-  document.getElementById('fe_live_calc').innerText = Math.round(live).toLocaleString();
-  document.getElementById('fe_deals_calc').innerText = Math.round(deals);
-  document.getElementById('fe_rev_gen').innerText = fmt(revGen);
-}
-
-// ─── RECALC CLOSERS ────────────────────────────────────────────────
-function recalcClosers() {
-  let totalAvail = 0, totalAppr = 0, totalLive = 0, totalCloses = 0, totalRev = 0;
-
-  ['janie','sam','jason'].forEach(id => {
-    const avail = +document.getElementById('c_'+id+'_avail').value || 0;
-    const apprPct = +document.getElementById('c_'+id+'_appr').value || 85;
-    const showPct = +document.getElementById('c_'+id+'_show').value || 66;
-    const closePct= +document.getElementById('c_'+id+'_close').value || 25;
-    const acv = 12500;
-
-    const apprCalls = Math.round(avail * (apprPct/100));
-    const live = Math.round(apprCalls * (showPct/100));
-    const closes = Math.round(live * (closePct/100));
-    const rev = closes * acv;
-
-    document.getElementById('c_'+id+'_appr_calls').innerText = apprCalls;
-    document.getElementById('c_'+id+'_live').innerText = live;
-    document.getElementById('c_'+id+'_closes').innerText = closes;
-    document.getElementById('c_'+id+'_closes').className = 'auto-val ' + (closePct >= 35 ? 'good' : closePct >= 25 ? 'warn' : 'bad');
-    document.getElementById('c_'+id+'_rev').innerText = fmt(rev);
-
-    totalAvail += avail; totalAppr += apprCalls; totalLive += live;
-    totalCloses += closes; totalRev += rev;
-  });
-
-  document.getElementById('ct_total_avail').innerText = totalAvail;
-  document.getElementById('ct_total_appr').innerText = totalAppr;
-  document.getElementById('ct_total_live').innerText = totalLive;
-  document.getElementById('ct_total_closes').innerText = totalCloses;
-  document.getElementById('ct_total_rev').innerText = fmt(totalRev);
-}
-
-// ─── RECALC SETTERS ────────────────────────────────────────────────
-function recalcSetters() {
-  let totalDials = 0, totalSets = 0;
-
-  ['pam','andrea','inbound'].forEach(id => {
-    const dials = +document.getElementById('s_'+id+'_dials').value || 0;
-    const sets  = +document.getElementById('s_'+id+'_sets').value || 0;
-    const rate  = dials > 0 ? ((sets/dials)*100).toFixed(1)+'%' : '—';
-    document.getElementById('s_'+id+'_rate').innerText = rate;
-    totalDials += dials; totalSets += sets;
-  });
-
-  document.getElementById('st_total_dials').innerText = totalDials.toLocaleString();
-  document.getElementById('st_total_sets').innerText = totalSets;
-  document.getElementById('st_avg_rate').innerText = totalDials > 0 ? ((totalSets/totalDials)*100).toFixed(1)+'%' : '—';
-
-  const projTotal = document.getElementById('setter-proj-total');
-  if (projTotal) projTotal.innerText = totalSets;
-  const vs = document.getElementById('setter-vs-kpi');
-  if (vs) {
-    const diff = totalSets - 115;
-    vs.innerHTML = diff >= 0 ? `<span style="color:var(--green)">▲ +${diff} above 115 target</span>` : `<span style="color:var(--amber)">▼ ${Math.abs(diff)} below 115 target</span>`;
-  }
-}
-
-// ─── RECALC BE ─────────────────────────────────────────────────────
-function recalcBE() {
-  const legacyP  = +document.getElementById('be_legacy_p').value || 0;
-  const fig7P    = +document.getElementById('be_7fig_p').value || 0;
-  const contP    = +document.getElementById('be_cont_p').value || 0;
-  const sc1      = +document.getElementById('be_sc1_sales').value || 0;
-  const sc2      = +document.getElementById('be_sc2_sales').value || 0;
-
-  // Avg values
-  const legacyACV  = 23500;
-  const fig7ACV    = 32500;
-  const contACV    = 6000;
-  const scACV      = 12500;
-
-  const total = (legacyP * legacyACV) + (fig7P * fig7ACV) + (contP * contACV) + ((sc1+sc2) * scACV);
-  document.getElementById('be_rev_total').innerText = fmt(total);
-}
-
-// ─── TABS ─────────────────────────────────────────────────────────
-function showTab(name) {
-  document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  event.currentTarget.classList.add('active');
-}
-
-// ─── ADD ROWS ─────────────────────────────────────────────────────
-function addCustomRevenueRow() {
-  customRevenueRows++;
-  const id = 'custom_rev_' + customRevenueRows;
-  const grid = document.querySelector('.proj-grid');
-  const addBtn = document.querySelector('.add-row-btn');
-  const row = document.createElement('div');
-  row.className = 'proj-row';
-  row.innerHTML = `
-    <div class="proj-cell metric-name"><input type="text" placeholder="Custom revenue line..." style="background:transparent;border:none;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%;"></div>
-    <div class="proj-cell"><input type="number" id="${id}_p" value="0" oninput="recalcRevenue()" placeholder="0"></div>
-    <div class="proj-cell hist-ref">—</div>
-    <div class="proj-cell auto-calc">—</div>
-    <div class="proj-cell variance">—</div>
-    <div class="proj-cell"><button class="notes-btn" onclick="openNotes('Custom ${customRevenueRows}')">📝</button></div>
-  `;
-  grid.insertBefore(row, addBtn.previousElementSibling);
-}
-
-function addCloserRow() {
-  closerRowCount++;
-  const id = 'closer' + closerRowCount;
-  const table = document.querySelector('.closer-table');
-  const lastRow = table.querySelector('.totals-row');
-  const row = document.createElement('div');
-  row.className = 'ct-row';
-  row.innerHTML = `
-    <div class="closer-name"><input type="text" placeholder="Closer name..." style="background:transparent;border:none;color:var(--white);font-size:12px;outline:none;width:100%;font-family:'Outfit',sans-serif;"></div>
-    <div><input type="number" id="${id}_avail" value="80" oninput="recalcClosers()"></div>
-    <div><input type="number" id="${id}_appr" value="85" oninput="recalcClosers()" step="1"></div>
-    <div class="auto-val" id="${id}_appr_calls">68</div>
-    <div><input type="number" id="${id}_show" value="66" oninput="recalcClosers()" step="1"></div>
-    <div class="auto-val" id="${id}_live">45</div>
-    <div><input type="number" id="${id}_close" value="25" oninput="recalcClosers()" step="1"></div>
-    <div class="auto-val" id="${id}_closes">11</div>
-    <div class="auto-val" id="${id}_rev">$137,500</div>
-  `;
-  table.insertBefore(row, lastRow);
-}
-
-function addSetterRow() {
-  setterRowCount++;
-  const sid = 'setter' + setterRowCount;
-  const table = document.querySelector('.setter-table');
-  const lastRow = table.querySelector('.totals-row');
-  const row = document.createElement('div');
-  row.className = 'st-row';
-  row.innerHTML = `
-    <div class="setter-name"><input type="text" placeholder="Setter name..." style="background:transparent;border:none;color:var(--white);font-size:12px;outline:none;width:100%;font-family:'Outfit',sans-serif;"></div>
-    <div class="auto-val">Organic</div>
-    <div><input type="number" id="${sid}_dials" value="200" oninput="recalcSetters()"></div>
-    <div><input type="number" id="${sid}_sets" value="15" oninput="recalcSetters()"></div>
-    <div class="auto-val" id="${sid}_rate">7.5%</div>
-    <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;">—</div>
-    <div><button class="notes-btn" onclick="openNotes('${sid}')">📝</button></div>
-  `;
-  table.insertBefore(row, lastRow);
-}
-
-function addCampaignRow() {
-  const table = document.querySelector('.campaign-table');
-  const addBtn = table.nextElementSibling;
-  const row = document.createElement('div');
-  row.className = 'camp-row';
-  row.innerHTML = `
-    <div class="camp-name"><input type="text" placeholder="Campaign name..." style="background:transparent;border:none;color:var(--white);font-size:12px;outline:none;width:100%;font-family:'Outfit',sans-serif;"></div>
-    <div><span class="tag tag-organic">Custom</span></div>
-    <div><input type="number" value="0" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-    <div><input type="number" value="0" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-    <div><input type="number" value="0" style="width:100%;background:transparent;border:none;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;"></div>
-    <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;"><input type="text" placeholder="Notes..." style="background:transparent;border:none;color:var(--muted);font-size:11px;outline:none;width:100%;font-family:'Outfit',sans-serif;"></div>
-  `;
-  table.appendChild(row);
-}
-
-// ─── NOTES ────────────────────────────────────────────────────────
-function openNotes(key) {
-  currentNotesKey = key;
-  document.getElementById('notesModalTitle').innerText = '📝 Notes: ' + key;
-  document.getElementById('notesModalText').value = notesStore[key] || '';
-  document.getElementById('notesModal').classList.add('open');
-}
-
-function closeNotes() {
-  document.getElementById('notesModal').classList.remove('open');
-}
-
-function saveNotes() {
-  notesStore[currentNotesKey] = document.getElementById('notesModalText').value;
-  closeNotes();
-  showToast('Note saved');
-}
-
-// ─── SAVE ─────────────────────────────────────────────────────────
-function saveProjections() {
-  // Collect all projection values to a summary
-  const data = {
-    month: document.getElementById('monthSelect').value,
-    savedAt: new Date().toISOString(),
-    notes: notesStore,
-  };
-  // Could add localStorage here for persistence
-  showToast('Projections saved ✓');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.innerText = msg;
-  t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 2800);
-}
-
-function switchMonth() {
-  // In production this would load saved data for that month
-  showToast('Switched month — load actuals for selected month');
-}
-
-// ─── INIT ─────────────────────────────────────────────────────────
-buildHistoryTable();
-recalcRevenue();
-recalcClosers();
-recalcSetters();
-recalcBE();
 </script>
 </body>
 </html>

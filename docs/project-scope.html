@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IFCA Command Center — Project Scope</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07101e;--panel:#0d1929;--panel3:#162437;--border:#1e3050;--text:#c8d8ea;--muted:#4e6a88;--green:#10b981;--amber:#f59e0b;--red:#f87171;--blue:#60a5fa;--accent:#38bdf8;--gold:#fbbf24;--white:#f0f6ff;--purple:#a78bfa}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;line-height:1.6}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:16px}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--white)}
+.logo span{color:var(--accent)}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:10px;background:var(--panel3);border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em}
+.main{max-width:1000px;margin:0 auto;padding:36px 32px}
+h1{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:var(--white);margin-bottom:6px}
+h2{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--white);margin:32px 0 14px;display:flex;align-items:center;gap:10px}
+h2 .num{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--accent);color:#07101e;padding:2px 8px;border-radius:4px;font-weight:700}
+h3{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;color:var(--accent);margin:18px 0 8px}
+p{margin-bottom:10px;color:var(--text)}
+.flow{display:flex;gap:0;margin:20px 0;overflow-x:auto;padding:4px 0}
+.flow-node{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 18px;min-width:160px;text-align:center;position:relative}
+.flow-node .fn-icon{font-size:22px;margin-bottom:6px}
+.flow-node .fn-title{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--white);margin-bottom:3px}
+.flow-node .fn-sub{font-size:10px;color:var(--muted)}
+.flow-arrow{display:flex;align-items:center;padding:0 6px;color:var(--muted);font-size:20px;flex-shrink:0}
+.flow-node.source{border-color:var(--blue)}
+.flow-node.mid{border-color:var(--amber)}
+.flow-node.dest{border-color:var(--gold);background:linear-gradient(135deg,rgba(251,191,36,.06),transparent)}
+.step-list{counter-reset:steps;margin:0 0 20px}
+.step{display:flex;gap:14px;margin-bottom:12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;counter-increment:steps;position:relative}
+.step::before{content:counter(steps);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;background:var(--accent);color:#07101e;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-body{flex:1}
+.step-title{font-weight:600;color:var(--white);font-size:13px;margin-bottom:3px}
+.step-sub{font-size:12px;color:var(--muted)}
+.step-owner{font-family:'IBM Plex Mono',monospace;font-size:10px;display:inline-block;margin-top:6px;background:var(--panel3);border:1px solid var(--border);padding:2px 8px;border-radius:3px;color:var(--muted)}
+.step.done .step-title{color:var(--green)}
+.step.done::before{background:var(--green)}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+.tg{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.ta{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.tb{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+.pillar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.pillar{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px}
+.pillar-icon{font-size:24px;margin-bottom:8px}
+.pillar-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--white);margin-bottom:4px}
+.pillar-source{font-size:11px;color:var(--muted);margin-bottom:8px}
+.pillar-metrics{font-size:11px;color:var(--text)}
+.pillar-metrics li{margin-bottom:2px;padding-left:12px;position:relative;list-style:none}
+.pillar-metrics li::before{content:"·";position:absolute;left:0;color:var(--accent)}
+hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--panel3);padding:1px 5px;border-radius:3px;color:var(--accent)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.week-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.week{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px}
+.week-label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.week-item{font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:6px}
+.week-item:last-child{border-bottom:none}
+.week-item span{color:var(--accent);flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">IFCA <span>×</span> FCA</div>
+  <div class="badge">Command Center — Project Scope</div>
+  <div class="badge" style="color:var(--green);border-color:rgba(16,185,129,.3)">May 2026</div>
+  <a href="../index.html" style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent)">← Back to Dashboard</a>
+</div>
+
+<div class="main">
+<h1>IFCA Command Center</h1>
+<p style="color:var(--muted);margin-bottom:24px">Project scope, data architecture, and step-by-step execution plan</p>
+
+<h2><span class="num">WHAT</span> What We're Building</h2>
+<p>A single always-live dashboard that replaces the monthly spreadsheet review with real-time visibility into every metric that drives revenue. Four data pillars feed one command center. Every number traces back to one source of truth with no manual re-entry.</p>
+<p><strong style="color:var(--gold)">North star: $550K in IFCA revenue in 2 consecutive months</strong> (Lookback Period post-close). Every metric in this dashboard either accelerates that number or diagnoses what's blocking it.</p>
+
+<h2><span class="num">WHY</span> The Three Revenue Levers</h2>
+<p>The gap from April's $396K to the $550K target is $154K/month. It comes from exactly three places:</p>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0">
+  <div style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.3);border-radius:8px;padding:16px"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--red);margin-bottom:6px">1. Close Rate</div><div style="font-size:12px;color:var(--text)">Apr: 16% → Target: 25%<br>Janie alone targets 40%<br><strong style="color:var(--white)">Impact: +$112K at 25%</strong></div></div>
+  <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:16px"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--amber);margin-bottom:6px">2. Setter Volume</div><div style="font-size:12px;color:var(--text)">Apr: 48 sets → Target: 115–130<br>Pam + Andrea + Aloware inbound<br><strong style="color:var(--white)">Impact: +67 sets needed</strong></div></div>
+  <div style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.3);border-radius:8px;padding:16px"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--purple);margin-bottom:6px">3. BE Upsell Rate</div><div style="font-size:12px;color:var(--text)">Apr BE cash: $23K → Target: $100K+<br>Cory owns. Legacy + 7FCEO + Cont.<br><strong style="color:var(--white)">Impact: +$77K if target hit</strong></div></div>
+</div>
+
+<h2><span class="num">ARCHITECTURE</span> Data Flow</h2>
+<div class="flow">
+  <div class="flow-node source"><div class="fn-icon">📊</div><div class="fn-title">Hyros</div><div class="fn-sub">Primary attribution<br>Nightly CSV export</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node mid"><div class="fn-icon">📋</div><div class="fn-title">Google Sheets</div><div class="fn-sub">IFCA Sales Data Hub<br>Middleware layer</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node dest"><div class="fn-icon">🎯</div><div class="fn-title">Command Center</div><div class="fn-sub">GitHub Pages<br>jordandugger.github.io</div></div>
+</div>
+<div class="flow">
+  <div class="flow-node source"><div class="fn-icon">📱</div><div class="fn-title">Meta Ads MCP</div><div class="fn-sub">Real-time via<br>Claude Desktop (Craig)</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node mid"><div class="fn-icon">📋</div><div class="fn-title">Google Sheets</div><div class="fn-sub">Ads tab manual entry<br>at meeting start</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node dest"><div class="fn-icon">📣</div><div class="fn-title">Ads Tab</div><div class="fn-sub">CPL, ROAS, Spend<br>Funnel economics</div></div>
+</div>
+<div class="flow">
+  <div class="flow-node source"><div class="fn-icon">📞</div><div class="fn-title">PIF Perfect API</div><div class="fn-sub">Hourly sync via<br>Google Apps Script</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node mid"><div class="fn-icon">📋</div><div class="fn-title">PIF_Summary Sheet</div><div class="fn-sub">MTD totals + per-rep<br>auto-calculated</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node dest"><div class="fn-icon">📞</div><div class="fn-title">Sales Tab</div><div class="fn-sub">Closers, setters<br>close rate, sets</div></div>
+</div>
+<div class="flow">
+  <div class="flow-node source"><div class="fn-icon">📈</div><div class="fn-title">Google Sheets</div><div class="fn-sub">Kevin updates<br>BE tracker weekly</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node mid"><div class="fn-icon">📋</div><div class="fn-title">SC Upsell Tracker</div><div class="fn-sub">Legacy, 7FCEO<br>Cont., referrals</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node dest"><div class="fn-icon">📈</div><div class="fn-title">Back-End Tab</div><div class="fn-sub">BE closes, cash<br>SC pipeline</div></div>
+</div>
+
+<h2><span class="num">PILLARS</span> The Four Data Pillars</h2>
+<div class="pillar-grid">
+  <div class="pillar" style="border-color:rgba(96,165,250,.4)">
+    <div class="pillar-icon">📣</div>
+    <div class="pillar-name">Ads Performance</div>
+    <div class="pillar-source">Hyros + Meta Ads MCP</div>
+    <ul class="pillar-metrics"><li>MTD ad spend</li><li>Cost per lead (CPL)</li><li>Cost per booked call</li><li>Total leads</li><li>ROAS collected + generated</li><li>Top performing creatives</li></ul>
+  </div>
+  <div class="pillar" style="border-color:rgba(245,158,11,.4)">
+    <div class="pillar-icon">📞</div>
+    <div class="pillar-name">Sales (FE)</div>
+    <div class="pillar-source">PIF Perfect API</div>
+    <ul class="pillar-metrics"><li>Sets booked (per setter)</li><li>Live calls (per closer)</li><li>Close rate (per closer)</li><li>Closed deals count</li><li>FE revenue generated</li><li>Dials, set rate, show rate</li></ul>
+  </div>
+  <div class="pillar" style="border-color:rgba(167,139,250,.4)">
+    <div class="pillar-icon">📈</div>
+    <div class="pillar-name">Back-End Upsells</div>
+    <div class="pillar-source">Google Sheets (Kevin)</div>
+    <ul class="pillar-metrics"><li>Legacy Mastermind closes</li><li>7-Figure CEO closes</li><li>Continuation closes</li><li>SC referral pipeline</li><li>BE revenue generated</li><li>BE cash collected</li></ul>
+  </div>
+  <div class="pillar" style="border-color:rgba(251,191,36,.4)">
+    <div class="pillar-icon">🎯</div>
+    <div class="pillar-name">Projections</div>
+    <div class="pillar-source">Calculated layer (HTML)</div>
+    <ul class="pillar-metrics"><li>MRR (4 streams)</li><li>AR receivables (LK/FE/BE)</li><li>FE + BE upfront cash</li><li>Gross revenue proj</li><li>Gap to $550K target</li><li>Revenue equilibrium</li></ul>
+  </div>
+</div>
+
+<hr>
+
+<h2><span class="num">EXECUTION</span> Step-by-Step Build Plan</h2>
+<p style="color:var(--muted);margin-bottom:16px">Target: fully live within 1 week. Each step is independent — can be parallelized across the team.</p>
+
+<div class="week-grid">
+  <div class="week">
+    <div class="week-label">Day 1–2 · Foundation</div>
+    <div class="week-item"><span>①</span>Jordan shares repo with Craig + Clementine</div>
+    <div class="week-item"><span>②</span>Craig: install Meta MCP on Claude Desktop (~7 min)</div>
+    <div class="week-item"><span>③</span>Clementine: create IFCA Sales Data Hub Google Sheet</div>
+    <div class="week-item"><span>④</span>Email PIF Perfect: request API docs + key</div>
+  </div>
+  <div class="week">
+    <div class="week-label">Day 2–3 · PIF + Hyros</div>
+    <div class="week-item"><span>⑤</span>Generate PIF API key from settings</div>
+    <div class="week-item"><span>⑥</span>Clementine: paste Apps Script into Google Sheet</div>
+    <div class="week-item"><span>⑦</span>Set hourly trigger on syncPIFData()</div>
+    <div class="week-item"><span>⑧</span>Generate Hyros API key from account settings</div>
+  </div>
+  <div class="week">
+    <div class="week-label">Day 3–4 · BE + Hyros</div>
+    <div class="week-item"><span>⑨</span>Kevin: migrate upsell tracker to live Google Sheet</div>
+    <div class="week-item"><span>⑩</span>Configure Hyros nightly CSV export (Scientific Reporting)</div>
+    <div class="week-item"><span>⑪</span>Connect Hyros CSV to dashboard Ads tab</div>
+    <div class="week-item"><span>⑫</span>Craig runs first Meta MCP pull in Claude Desktop</div>
+  </div>
+  <div class="week">
+    <div class="week-label">Day 5–7 · Wire + Go Live</div>
+    <div class="week-item"><span>⑬</span>Connect PIF_Summary to dashboard Sales tab</div>
+    <div class="week-item"><span>⑭</span>Connect BE Sheet to dashboard Backend tab</div>
+    <div class="week-item"><span>⑮</span>Test full data flow end-to-end</div>
+    <div class="week-item"><span>⑯</span>First live projections meeting using dashboard</div>
+  </div>
+</div>
+
+<h3>Detailed Step Breakdown</h3>
+<div class="step-list">
+  <div class="step done"><div class="step-body"><div class="step-title">✓ Main dashboard built + deployed to GitHub Pages <span class="tag tg">Done</span></div><div class="step-sub">index.html live at jordandugger.github.io/IFCA-Master-Command-Center with all 4 tabs seeded with Apr actuals. Sub-pages for all pillars scaffolded.</div></div></div>
+  <div class="step done"><div class="step-body"><div class="step-title">✓ Projections calculator built <span class="tag tg">Done</span></div><div class="step-sub">Full projections/index.html with MRR, AR, FE, BE tabs, historical toggle, $550K gap tracker, closer + setter tables, campaign tracker.</div></div></div>
+  <div class="step done"><div class="step-body"><div class="step-title">✓ PIF Perfect webhook script written <span class="tag tg">Done</span></div><div class="step-sub">Google Apps Script (data/PIF_Webhook_Script.gs) handles doPost() webhook + API polling, writes to PIF_Live_Data, auto-rolls up PIF_Summary tab.</div></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Get PIF Perfect API key + docs <span class="tag ta">Pending</span></div><div class="step-sub">Log into app.pifperfect.com → Settings → API → Generate key. If not visible, email support@pifperfect.com asking for API endpoint docs for submissions + users.</div><span class="step-owner">Owner: Jordan / Clementine</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Craig: Install Meta Ads MCP on Claude Desktop <span class="tag ta">Pending</span></div><div class="step-sub">Claude Desktop → Settings → Developer → Edit Config. Add: {"mcpServers":{"meta-ads":{"url":"https://mcp.meta.com/ads/[Business_ID]"}}}. Restart. Authenticate with Meta Business OAuth. ~7 min.</div><span class="step-owner">Owner: Craig</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Clementine: Create IFCA Sales Data Hub Google Sheet <span class="tag ta">Pending</span></div><div class="step-sub">New sheet → 3 tabs: PIF_Raw, PIF_Summary, PIF_Log. Share with Clementine, Kevin, Erin. Extensions → Apps Script → paste PIF_Webhook_Script.gs → run testWebhook() to verify.</div><span class="step-owner">Owner: Clementine</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Generate Hyros API key <span class="tag ta">Pending</span></div><div class="step-sub">Hyros account → Account Settings → API → Generate key. Also configure Scientific Reporting saved report for nightly email CSV export (spend, CPL, ROAS, leads).</div><span class="step-owner">Owner: Jordan</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Kevin: Migrate BE upsell tracker to live Google Sheet <span class="tag ta">Pending</span></div><div class="step-sub">Migrate 2025_SC_Backend_Upsell_Tracker.xlsx to a live Google Sheet. Add columns: Legacy, 7FCEO, Continuation, SC #, Revenue, Cash Collected. Update weekly after close calls.</div><span class="step-owner">Owner: Kevin Hamidi</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Set Apps Script hourly trigger <span class="tag ta">Pending</span></div><div class="step-sub">In Google Apps Script editor: clock icon (Triggers) → Add Trigger → syncPIFData → Time-driven → Hour timer → Every hour. Run manually at start of any meeting for real-time data.</div><span class="step-owner">Owner: Clementine</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Wire PIF_Summary → Dashboard Sales tab <span class="tag tb">Build step</span></div><div class="step-sub">Add JavaScript fetch() call in sales/index.html that reads from the Google Sheet JSON endpoint. Or: Clementine pastes MTD values manually at meeting start (60 sec). Build auto-fetch after confirming PIF feed is stable for 2+ weeks.</div><span class="step-owner">Owner: Jordan + Claude</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">Wire BE Tracker → Dashboard Backend tab <span class="tag tb">Build step</span></div><div class="step-sub">Same pattern as PIF. Kevin's Google Sheet publishes JSON. Dashboard reads via fetch(). Manual paste fallback at meetings.</div><span class="step-owner">Owner: Jordan + Claude</span></div></div>
+  <div class="step"><div class="step-body"><div class="step-title">First fully-live projections meeting <span class="tag ta">Target: week of May 19</span></div><div class="step-sub">Craig pulls Meta numbers via Claude Desktop (2 min). Clementine pastes PIF summary (1 min). Kevin reads BE tracker (1 min). Set May projections in projections/index.html. All 4 pillars visible in command center.</div><span class="step-owner">Owner: Full team</span></div></div>
+</div>
+
+<hr>
+
+<h2><span class="num">OWNERS</span> Who Does What</h2>
+<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px">
+  <div style="display:grid;grid-template-columns:140px 1fr 120px 100px;background:var(--panel3);border-bottom:1px solid var(--border)">
+    <div style="padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Person</div>
+    <div style="padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Responsibility</div>
+    <div style="padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Frequency</div>
+    <div style="padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">ETA</div>
+  </div>
+  <div style="display:grid;grid-template-columns:140px 1fr 120px 100px;border-bottom:1px solid var(--border);padding:10px 14px;font-size:12px"><div style="font-weight:600;color:var(--white)">Craig</div><div>Meta Ads MCP setup · pull CPL/ROAS/spend at each meeting</div><div style="color:var(--muted)">Monthly meeting</div><div><span class="tag ta">Day 1–2</span></div></div>
+  <div style="display:grid;grid-template-columns:140px 1fr 120px 100px;border-bottom:1px solid var(--border);padding:10px 14px;font-size:12px"><div style="font-weight:600;color:var(--white)">Clementine</div><div>Google Sheet setup · Apps Script install · PIF sync ops</div><div style="color:var(--muted)">One-time + ongoing</div><div><span class="tag ta">Day 1–3</span></div></div>
+  <div style="display:grid;grid-template-columns:140px 1fr 120px 100px;border-bottom:1px solid var(--border);padding:10px 14px;font-size:12px"><div style="font-weight:600;color:var(--white)">Kevin Hamidi</div><div>Migrate BE upsell tracker to Google Sheet · update weekly</div><div style="color:var(--muted)">Weekly</div><div><span class="tag ta">Day 3–4</span></div></div>
+  <div style="display:grid;grid-template-columns:140px 1fr 120px 100px;border-bottom:1px solid var(--border);padding:10px 14px;font-size:12px"><div style="font-weight:600;color:var(--white)">Jordan</div><div>PIF API key · Hyros API key · Hyros saved report · oversee build</div><div style="color:var(--muted)">One-time</div><div><span class="tag ta">Day 1–2</span></div></div>
+  <div style="display:grid;grid-template-columns:140px 1fr 120px 100px;padding:10px 14px;font-size:12px"><div style="font-weight:600;color:var(--white)">Cory Carpenter</div><div>BE pipeline visibility · confirm 7FCEO + Legacy targets for dashboard</div><div style="color:var(--muted)">Monthly check</div><div><span class="tag tg">Ongoing</span></div></div>
+</div>
+
+<h2><span class="num">NOTES</span> Key Constraints</h2>
+<ul style="font-size:13px;padding-left:0;list-style:none">
+  <li style="padding:8px 0;border-bottom:1px solid var(--border)">⚠️ <strong style="color:var(--white)">FCA revenue excluded</strong> from $550K Lookback — never blend FCA numbers into IFCA tracking</li>
+  <li style="padding:8px 0;border-bottom:1px solid var(--border)">⚠️ <strong style="color:var(--white)">Hyros is authoritative</strong> — Meta MCP is for real-time decisions, not the official revenue number</li>
+  <li style="padding:8px 0;border-bottom:1px solid var(--border)">⚠️ <strong style="color:var(--white)">Apps Script permissions</strong> — Clementine must use a single-account Chrome session (incognito or dedicated profile) to avoid the multi-account error</li>
+  <li style="padding:8px 0;border-bottom:1px solid var(--border)">✅ <strong style="color:var(--white)">GitHub Pages</strong> — no server costs, instant deploy on push, accessible at jordandugger.github.io/IFCA-Master-Command-Center</li>
+  <li style="padding:8px 0">✅ <strong style="color:var(--white)">Phased approach</strong> — dashboard works now with manual inputs, live feeds activate one by one. First meeting doesn't need everything wired.</li>
+</ul>
+
+<div style="margin-top:24px;display:flex;gap:12px">
+  <a href="../index.html" style="background:var(--accent);color:#07101e;padding:10px 20px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:.06em">← Open Dashboard</a>
+  <a href="integration-setup-guide.html" style="background:var(--panel);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;text-decoration:none;text-transform:uppercase;letter-spacing:.06em">Integration Guide →</a>
+  <a href="../projections/index.html" style="background:var(--panel);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;text-decoration:none;text-transform:uppercase;letter-spacing:.06em">Projections Calculator →</a>
+</div>
+</div>
+</body>
+</html>
