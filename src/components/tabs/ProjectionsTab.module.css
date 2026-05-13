@@ -1,0 +1,63 @@
+.miniLabel {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.projNum {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 26px;
+  color: var(--white);
+}
+
+.projSub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.targetBanner {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(56, 189, 248, 0.04));
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 10px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.targetLabel {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.targetValue {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--gold);
+}
+
+.targetSub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.floorValue {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--white);
+}

@@ -1,0 +1,99 @@
+.equilGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.miniLabel {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.bigNum {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--white);
+}
+
+.medNum {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--white);
+}
+
+.miniSub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.leverItem {
+  margin-bottom: 14px;
+}
+
+.leverHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.leverName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.leverNote {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.pillarCard {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.pillarCard:hover {
+  border-color: var(--accent);
+}
+
+.pillarTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.pillarIcon {
+  font-size: 22px;
+}
+
+.pillarTitle {
+  font-family: "Syne", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--white);
+  margin-bottom: 3px;
+}
+
+.pillarSource {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.pillarNote {
+  font-size: 11px;
+}

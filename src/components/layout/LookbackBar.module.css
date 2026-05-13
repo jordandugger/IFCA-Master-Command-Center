@@ -1,0 +1,43 @@
+.bar {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.06), rgba(56, 189, 248, 0.04));
+  border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  overflow-x: auto;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.value {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--white);
+}
+
+.note {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.divider {
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+  flex-shrink: 0;
+}

@@ -1,0 +1,125 @@
+.header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  gap: 16px;
+}
+
+.logo {
+  font-family: "Syne", sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--white);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+.logoSub {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.nav {
+  display: flex;
+  gap: 2px;
+  background: var(--panel3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 3px;
+}
+
+.navBtn {
+  padding: 6px 16px;
+  border-radius: 5px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.navBtn:hover {
+  color: var(--text);
+}
+
+.navBtnActive {
+  background: var(--accent);
+  color: #07101e;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+.statusLabel {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ctaBtn {
+  background: var(--accent);
+  color: #07101e;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.ctaBtn:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1100px) {
+  .statusIndicator {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .nav {
+    display: none;
+  }
+}

@@ -1,0 +1,30 @@
+.wrap {
+  margin-top: 8px;
+}
+
+.labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.track {
+  background: var(--panel3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s;
+}
+
+.colorAccent { background: var(--accent); }
+.colorGreen  { background: var(--green); }
+.colorAmber  { background: var(--amber); }
+.colorRed    { background: var(--red); }
+.colorGold   { background: var(--gold); }
