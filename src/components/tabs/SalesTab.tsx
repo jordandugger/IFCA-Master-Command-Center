@@ -6,13 +6,9 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Badge, StatusTag } from "@/components/ui/Badge";
 import type { PifSummary } from "@/app/api/pif/route";
 
-const STATIC_CLOSERS = ["Janie (Taeler)", "Samantha", "Jason"];
-
-const STATIC_SETTERS = [
-  { name: "Pam",             source: "Taeler IG DMs",    badge: <Badge variant="green">Active</Badge> },
-  { name: "Andrea",          source: "IFCA IG / TBD",    badge: <Badge variant="amber">Placement TBD</Badge> },
-  { name: "Inbound Aloware", source: "VSL Leads (Paid)", badge: <Badge variant="blue">Paid</Badge> },
-];
+function fmt$(n: number) {
+  return n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n.toLocaleString()}`;
+}
 
 export function SalesTab() {
   const [data, setData]       = useState<PifSummary | null>(null);
@@ -26,133 +22,163 @@ export function SalesTab() {
       .catch(() => { setError(true); setLoading(false); });
   }, []);
 
-  const val = (v: string | undefined) =>
-    loading ? "…" : (v && v !== "—" && v !== "") ? v : "—";
-
   const isLive = !loading && !error && data !== null;
-
-  const closerRows = STATIC_CLOSERS.map((name) => {
-    const firstName = name.split(" ")[0];
-    const live = data?.reps.find((r) =>
-      r.name.toLowerCase().includes(firstName.toLowerCase())
-    );
-    return { name, closes: live?.closes, revenue: live?.revenue, closeRate: live?.closeRate };
-  });
+  const t = data?.totals;
 
   return (
     <div>
-      {/* Live status banner */}
-      {isLive && data && (
-        <div style={{
-          background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.25)",
-          borderRadius: 8, padding: "8px 14px", marginBottom: 16,
-          fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "var(--green)",
-          display: "flex", justifyContent: "space-between",
-        }}>
-          <span>● Live — PIF Perfect</span>
-          <span style={{ color: "var(--muted)" }}>Updated: {data.lastUpdated}</span>
-        </div>
-      )}
+      {/* Status banner */}
+      <div style={{
+        background: isLive ? "rgba(16,185,129,0.06)" : "rgba(245,158,11,0.06)",
+        border: `1px solid ${isLive ? "rgba(16,185,129,0.25)" : "rgba(245,158,11,0.25)"}`,
+        borderRadius: 8, padding: "8px 14px", marginBottom: 16,
+        fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
+        color: isLive ? "var(--green)" : "var(--amber)",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <span>{loading ? "Loading PIF Perfect data…" : isLive ? `● Live — PIF Perfect · ${data.month} MTD` : "⚠ Could not load PIF data"}</span>
+        {isLive && <span style={{ color: "var(--muted)" }}>Updated: {data.asOf}</span>}
+      </div>
 
       {/* KPI Row */}
       <div className="kpi-grid">
         <KpiCard
-          label="Sets Booked MTD"
-          value={<span style={{ color: "var(--amber)" }}>{val(data?.mtdSets)}</span>}
+          label="Total Sets MTD"
+          value={<span style={{ color: "var(--amber)" }}>{loading ? "…" : t?.totalSets ?? "—"}</span>}
           sub="Target: 115–130/mo"
         />
         <KpiCard
           label="Live Calls MTD"
-          value={val(data?.mtdLive)}
-          sub="Approved → showed"
+          value={loading ? "…" : t?.showed ?? "—"}
+          sub={`Show rate: ${t?.showRate ?? "—"}`}
         />
         <KpiCard
           label="Close Rate MTD"
-          value={<span style={{ color: isLive ? "var(--white)" : "var(--red)" }}>{val(data?.mtdCloseRate)}</span>}
-          sub="Target: 25% · Apr: 16%"
+          value={<span style={{ color: "var(--white)" }}>{loading ? "…" : t?.closeRate ?? "—"}</span>}
+          sub={`Apr: 16% · Target: 25% · ${t?.closes ?? "—"} closes`}
           variant="warn"
         />
         <KpiCard
           label="Closed Deals MTD"
-          value={<span style={{ color: "var(--green)" }}>{val(data?.mtdCloses)}</span>}
+          value={<span style={{ color: "var(--green)" }}>{loading ? "…" : t?.closes ?? "—"}</span>}
           sub="@ $12,500 ACV"
           variant="good"
         />
         <KpiCard
-          label="FE Revenue Generated"
-          value={<span style={{ color: "var(--gold)" }}>{val(data?.mtdRevenue)}</span>}
-          sub="From PIF Perfect"
+          label="FE Revenue MTD"
+          value={<span style={{ color: "var(--gold)" }}>{loading ? "…" : t ? fmt$(t.revenue) : "—"}</span>}
+          sub={`Cash collected: ${t ? fmt$(t.cash) : "—"}`}
           variant="highlight"
         />
       </div>
 
-      {/* Closer table */}
+      {/* Closer table — fully dynamic */}
       <SectionTitle>
         Closer Performance{" "}
         <StatusTag variant={isLive ? "live" : "pending"}>
-          {isLive ? "Live" : "PIF Feed Pending"}
+          {isLive ? "Live" : "Loading"}
         </StatusTag>
       </SectionTitle>
       <div className="dt">
-        <div className="dth" style={{ gridTemplateColumns: "150px repeat(7, 1fr)" }}>
-          <div>Closer</div><div>Slots</div><div>Appr. Calls</div><div>Show %</div>
-          <div>Live</div><div>Closes</div><div>CR%</div><div>Revenue</div>
+        <div className="dth" style={{ gridTemplateColumns: "170px repeat(6, 1fr)" }}>
+          <div>Closer</div>
+          <div>Scheduled</div>
+          <div>Showed</div>
+          <div>Show %</div>
+          <div>Closes</div>
+          <div>Close %</div>
+          <div>Revenue</div>
         </div>
-        {closerRows.map((c) => (
-          <div key={c.name} className="dtr" style={{ gridTemplateColumns: "150px repeat(7, 1fr)" }}>
-            <div className="dtc nm">{c.name}</div>
-            <div className="dtc mono">—</div>
-            <div className="dtc mono">—</div>
-            <div className="dtc mono">{val(data?.mtdShowRate)}</div>
-            <div className="dtc mono">—</div>
-            <div className="dtc mono">{val(c.closes)}</div>
-            <div className="dtc mono">
-              {c.closeRate && c.closeRate !== "—"
-                ? <Badge variant="green">{c.closeRate}</Badge>
-                : "—"}
-            </div>
-            <div className="dtc mono">{val(c.revenue)}</div>
+
+        {loading && (
+          <div className="dtr" style={{ gridTemplateColumns: "170px repeat(6, 1fr)" }}>
+            <div className="dtc" style={{ color: "var(--muted)", gridColumn: "1 / -1" }}>Loading…</div>
           </div>
-        ))}
-        <div className="dttot" style={{ gridTemplateColumns: "150px repeat(7, 1fr)" }}>
-          <div>TOTALS</div><div>—</div><div>—</div>
-          <div>{val(data?.mtdShowRate)}</div>
-          <div>{val(data?.mtdLive)}</div>
-          <div>{val(data?.mtdCloses)}</div>
-          <div>{val(data?.mtdCloseRate)}</div>
-          <div>{val(data?.mtdRevenue)}</div>
-        </div>
+        )}
+
+        {isLive && data.closers.map((c) => {
+          const crNum = parseFloat(c.closeRate);
+          const crColor = isNaN(crNum) ? "var(--muted)" : crNum >= 25 ? "var(--green)" : crNum >= 15 ? "var(--amber)" : "var(--red)";
+          return (
+            <div key={c.name} className="dtr" style={{ gridTemplateColumns: "170px repeat(6, 1fr)" }}>
+              <div className="dtc nm">{c.name}</div>
+              <div className="dtc mono">{c.scheduled}</div>
+              <div className="dtc mono">{c.showed}</div>
+              <div className="dtc mono">{c.showRate}</div>
+              <div className="dtc mono">{c.closes}</div>
+              <div className="dtc mono">
+                {c.closeRate !== "—"
+                  ? <Badge variant={crNum >= 25 ? "green" : crNum >= 15 ? "amber" : "red"}>{c.closeRate}</Badge>
+                  : "—"}
+              </div>
+              <div className="dtc mono" style={{ color: c.revenue > 0 ? "var(--green)" : "var(--muted)" }}>
+                {c.revenue > 0 ? fmt$(c.revenue) : "—"}
+              </div>
+            </div>
+          );
+        })}
+
+        {isLive && (
+          <div className="dttot" style={{ gridTemplateColumns: "170px repeat(6, 1fr)" }}>
+            <div>TOTALS</div>
+            <div>{t?.scheduled}</div>
+            <div>{t?.showed}</div>
+            <div>{t?.showRate}</div>
+            <div>{t?.closes}</div>
+            <div>{t?.closeRate}</div>
+            <div>{t ? fmt$(t.revenue) : "—"}</div>
+          </div>
+        )}
       </div>
 
-      {/* Setter table */}
+      {/* Setter table — fully dynamic */}
       <SectionTitle>
         Setter Performance{" "}
         <StatusTag variant={isLive ? "live" : "pending"}>
-          {isLive ? "Live" : "PIF Feed Pending"}
+          {isLive ? "Live" : "Loading"}
         </StatusTag>
       </SectionTitle>
       <div className="dt">
-        <div className="dth" style={{ gridTemplateColumns: "150px repeat(4, 1fr) 120px" }}>
-          <div>Setter</div><div>Dials</div><div>Sets</div><div>Set Rate</div>
-          <div>Lead Source</div><div>Status</div>
+        <div className="dth" style={{ gridTemplateColumns: "170px repeat(5, 1fr)" }}>
+          <div>Setter</div>
+          <div>OB Dials</div>
+          <div>OB Sets</div>
+          <div>IB Sets</div>
+          <div>Total Sets</div>
+          <div>Booked</div>
         </div>
-        {STATIC_SETTERS.map((s) => (
-          <div key={s.name} className="dtr" style={{ gridTemplateColumns: "150px repeat(4, 1fr) 120px" }}>
+
+        {loading && (
+          <div className="dtr" style={{ gridTemplateColumns: "170px repeat(5, 1fr)" }}>
+            <div className="dtc" style={{ color: "var(--muted)", gridColumn: "1 / -1" }}>Loading…</div>
+          </div>
+        )}
+
+        {isLive && data.setters.map((s) => (
+          <div key={s.name} className="dtr" style={{ gridTemplateColumns: "170px repeat(5, 1fr)" }}>
             <div className="dtc nm">{s.name}</div>
-            <div className="dtc mono">{val(data?.mtdCalls)}</div>
-            <div className="dtc mono">{val(data?.mtdSets)}</div>
-            <div className="dtc mono">{val(data?.mtdSetRate)}</div>
-            <div className="dtc">{s.source}</div>
-            <div className="dtc">{s.badge}</div>
+            <div className="dtc mono">{s.obDials || "—"}</div>
+            <div className="dtc mono">{s.obSets || "—"}</div>
+            <div className="dtc mono">{s.ibSets || "—"}</div>
+            <div className="dtc mono">
+              {s.totalSets > 0
+                ? <Badge variant="green">{s.totalSets}</Badge>
+                : "—"}
+            </div>
+            <div className="dtc mono">{s.callsBooked || "—"}</div>
           </div>
         ))}
-        <div className="dttot" style={{ gridTemplateColumns: "150px repeat(4, 1fr) 120px" }}>
-          <div>TOTALS</div>
-          <div>{val(data?.mtdCalls)}</div>
-          <div>{val(data?.mtdSets)}</div>
-          <div>{val(data?.mtdSetRate)}</div>
-          <div>—</div><div>—</div>
-        </div>
+
+        {isLive && (
+          <div className="dttot" style={{ gridTemplateColumns: "170px repeat(5, 1fr)" }}>
+            <div>TOTALS</div>
+            <div>{t?.obDials}</div>
+            <div>—</div>
+            <div>—</div>
+            <div>{t?.totalSets}</div>
+            <div>—</div>
+          </div>
+        )}
       </div>
     </div>
   );
