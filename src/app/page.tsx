@@ -14,7 +14,7 @@ export default function Dashboard() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case "overview":    return <OverviewTab />;
+      case "overview":    return <OverviewTab onNavigate={setActiveTab} />;
       case "ads":         return <AdsTab />;
       case "sales":       return <SalesTab />;
       case "backend":     return <BackEndTab />;
