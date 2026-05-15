@@ -1,104 +1,224 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { Badge } from "@/components/ui/Badge";
+import { StatusTag } from "@/components/ui/Badge";
+import type { ProjectionsSummary, ProjectionRow } from "@/app/api/projections/route";
 import styles from "./ProjectionsTab.module.css";
 
-const HISTORY = [
-  { month: "Jan 2026", gross: "$452,387", feCash: "$134,900", beCash: "$65,000", mrr: "—", closes: "24", cr: null, cpl: null },
-  { month: "Feb 2026", gross: "$411,586", feCash: "$131,758", beCash: "$55,333", mrr: "—", closes: "23", cr: null, cpl: null },
-  { month: "Mar 2026", gross: "$446,242", feCash: "$140,275", beCash: "$64,000", mrr: "$92,822", closes: "25", cr: { label: "21.9%", variant: "amber" as const }, cpl: { label: "$66.82", variant: "amber" as const } },
-  { month: "Apr 2026", gross: "$396,938", feCash: "$86,765", beCash: "$23,333", mrr: "$93,186", closes: "16", cr: { label: "16.0%", variant: "red" as const }, cpl: { label: "$79.98", variant: "red" as const }, highlight: true },
-];
+function fmt$(n: number): string {
+  if (n === 0) return "—";
+  const abs = Math.abs(n);
+  if (abs >= 1000) return `${n < 0 ? "-" : ""}$${(abs / 1000).toFixed(1)}K`;
+  return `$${n.toFixed(0)}`;
+}
+function fmtN(n: number): string {
+  return n === 0 ? "—" : n.toLocaleString();
+}
+function fmtPct(n: number): string {
+  return n === 0 ? "—" : `${n.toFixed(1)}%`;
+}
+function fmtRow(r: ProjectionRow, val: number): string {
+  if (val === 0 && r.actual === 0 && r.projection === 0) return "—";
+  switch (r.unit) {
+    case "currency": return fmt$(val);
+    case "percent":  return `${val.toFixed(1)}%`;
+    case "ratio":    return val > 0 ? `${val.toFixed(2)}x` : "—";
+    default:         return fmtN(val);
+  }
+}
+
+function varianceColor(v: string): string {
+  if (!v || v === "—") return "var(--muted)";
+  const n = parseFloat(v.replace(/[%,]/g, ""));
+  if (isNaN(n)) return "var(--muted)";
+  if (n >= 0) return "var(--green)";
+  if (n >= -10) return "var(--amber)";
+  return "var(--red)";
+}
+
+function ProjectionsTable({ title, rows, statusTag }: { title: string; rows: ProjectionRow[]; statusTag?: string }) {
+  if (!rows.length) return null;
+  return (
+    <>
+      <SectionTitle>
+        {title}{" "}
+        {statusTag && <StatusTag variant="live">{statusTag}</StatusTag>}
+      </SectionTitle>
+      <div className="dt">
+        <div className="dth" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr" }}>
+          <div>Metric</div>
+          <div>Projection</div>
+          <div>Actual</div>
+          <div>Pace</div>
+          <div>Variance</div>
+        </div>
+        {rows.map((r, i) => {
+          const isTotal = r.label.toLowerCase().includes("total") || r.label.startsWith("~");
+          const cleanLabel = r.label.replace(/^~+\s*/, "").trim();
+          return (
+            <div key={i} className={isTotal ? "dttot" : "dtr"}
+                 style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr" }}>
+              <div className={isTotal ? "" : "dtc nm"}>{cleanLabel}</div>
+              <div className={isTotal ? "" : "dtc mono"}>{fmtRow(r, r.projection)}</div>
+              <div className={isTotal ? "" : "dtc mono"}>{fmtRow(r, r.actual)}</div>
+              <div className={isTotal ? "" : "dtc mono"}>{fmtRow(r, r.pace)}</div>
+              <div className={isTotal ? "" : "dtc mono"} style={{ color: varianceColor(r.varianceText) }}>
+                {r.varianceText || "—"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
 
 export function ProjectionsTab() {
+  const [data, setData] = useState<ProjectionsSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/projections")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) { setError(d.error); setLoading(false); return; }
+        setData(d as ProjectionsSummary); setLoading(false);
+      })
+      .catch((e) => { setError(String(e)); setLoading(false); });
+  }, []);
+
+  const isLive = !loading && !error && data !== null;
+  const t = data?.totals;
+
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <SectionTitle>Monthly Projections — May 2026</SectionTitle>
+      {/* Status banner */}
+      <div style={{
+        background: isLive ? "rgba(16,185,129,0.06)" : error ? "rgba(239,68,68,0.06)" : "rgba(245,158,11,0.06)",
+        border: `1px solid ${isLive ? "rgba(16,185,129,0.25)" : error ? "rgba(239,68,68,0.25)" : "rgba(245,158,11,0.25)"}`,
+        borderRadius: 8, padding: "8px 14px", marginBottom: 16,
+        fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
+        color: isLive ? "var(--green)" : error ? "var(--red)" : "var(--amber)",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <span>
+          {loading ? "Loading projections sheet…"
+            : isLive ? `● Live — ${data.month} Projections · Day ${data.currentDay} of ${data.daysInMonth}`
+            : `⚠ Projections error: ${error}`}
+        </span>
+        {isLive && <span style={{ color: "var(--muted)" }}>Updated: {data.asOf}</span>}
       </div>
 
-      {/* Summary cards */}
-      <div className="three-col">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <SectionTitle>Monthly Projections — {data?.month ?? ""} 2026</SectionTitle>
+      </div>
+
+      {/* Month progress bar */}
+      {isLive && (
+        <ProgressBar
+          label={`Month progress: Day ${data.currentDay} of ${data.daysInMonth}`}
+          rightLabel={`${data.progressPct.toFixed(0)}%`}
+          percent={data.progressPct}
+          color="gold"
+          height={6}
+        />
+      )}
+
+      {/* Hero Summary */}
+      <div className="three-col" style={{ marginTop: 16 }}>
         <div className="pbox">
-          <div className={styles.miniLabel}>Total MRR (Proj)</div>
-          <div className={styles.projNum}>$88,000</div>
-          <ProgressBar label="vs $93K Apr actual" rightLabel="94.6%" percent={94.6} color="amber" />
+          <div className={styles.miniLabel}>Total Generated Revenue</div>
+          <div className={styles.projNum}>{t ? fmt$(t.totalGenRev) : "…"}</div>
+          <ProgressBar
+            label={`Proj: ${t ? fmt$(t.totalGenRevProj) : "—"}`}
+            rightLabel={t && t.totalGenRevProj > 0 ? `${((t.totalGenRev / t.totalGenRevProj) * 100).toFixed(0)}%` : "—"}
+            percent={t && t.totalGenRevProj > 0 ? (t.totalGenRev / t.totalGenRevProj) * 100 : 0}
+            color="green"
+          />
         </div>
         <div className="pbox">
-          <div className={styles.miniLabel}>AR Collections (Proj)</div>
-          <div className={styles.projNum}>$202,275</div>
-          <div className={styles.projSub}>LK $1.8K + FE AR $102K + BE AR $98K</div>
+          <div className={styles.miniLabel}>FE Closes (IFCA)</div>
+          <div className={styles.projNum}>
+            {t ? `${t.feCloses}` : "…"}
+            <span style={{ fontSize: 14, color: "var(--muted)", marginLeft: 8 }}>
+              / {t?.feClosesProj ?? "—"}
+            </span>
+          </div>
+          <ProgressBar
+            label={`Close Rate: ${t ? fmtPct(t.closeRate) : "—"}`}
+            rightLabel={`Target: ${t ? fmtPct(t.closeRateProj) : "—"}`}
+            percent={t && t.closeRateProj > 0 ? (t.closeRate / t.closeRateProj) * 100 : 0}
+            color={t && t.closeRate >= t.closeRateProj ? "green" : "amber"}
+          />
         </div>
         <div className="pbox">
-          <div className={styles.miniLabel}>Upfront Cash (FE+BE)</div>
-          <div className={styles.projNum}>$25,200</div>
-          <div className={styles.projSub}>FE: $0 · BE: $25.2K</div>
+          <div className={styles.miniLabel}>Ad Spend MTD</div>
+          <div className={styles.projNum}>{t ? fmt$(t.adSpend) : "…"}</div>
+          <div className={styles.projSub}>
+            ROAS Gen: <span style={{ color: "var(--green)" }}>{t && t.roasGen > 0 ? `${t.roasGen.toFixed(2)}x` : "—"}</span>
+            {" · "}
+            Col: <span style={{ color: t && t.roasCol >= 2 ? "var(--green)" : "var(--amber)" }}>
+              {t && t.roasCol > 0 ? `${t.roasCol.toFixed(2)}x` : "—"}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Gold target banner */}
-      <div className={styles.targetBanner}>
+      <div className={styles.targetBanner} style={{ marginTop: 20 }}>
         <div>
-          <div className={styles.targetLabel}>Projected Gross Revenue — May 2026</div>
-          <div className={styles.targetValue}>$315,475</div>
+          <div className={styles.targetLabel}>AOV (Average Order Value)</div>
+          <div className={styles.targetValue}>{t ? fmt$(t.aov) : "—"}</div>
           <div className={styles.targetSub}>
-            Gap: <span style={{ color: "var(--gold)", fontWeight: 700 }}>$234,525</span>
-            {" "}· Updates when live feeds connected
+            Upfront Collected: <span style={{ color: "var(--gold)", fontWeight: 700 }}>{t ? fmt$(t.totalUpfrontCollected) : "—"}</span>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
           <div className={styles.miniLabel}>Lookback Floor</div>
-          <div className={styles.floorValue}>$550,000</div>
+          <div className={styles.floorValue}>$550K</div>
+          <div className={styles.projSub} style={{ marginTop: 4 }}>
+            {t && t.totalGenRev > 0
+              ? `${((t.totalGenRev / 550000) * 100).toFixed(0)}% of target`
+              : "—"}
+          </div>
         </div>
       </div>
-      <ProgressBar label="May Proj vs $550K" rightLabel="57.4%" percent={57.4} color="gold" height={10} />
 
-      {/* Historical table */}
-      <SectionTitle>Historical Reference</SectionTitle>
-      <div className="dt" style={{ marginTop: 16 }}>
-        <div className="dth" style={{ gridTemplateColumns: "120px repeat(7, 1fr)" }}>
-          <div>Month</div>
-          <div>Gross Rev</div>
-          <div>FE Cash</div>
-          <div>BE Cash</div>
-          <div>MRR</div>
-          <div>Closes</div>
-          <div>CR%</div>
-          <div>CPL</div>
-        </div>
-        {HISTORY.map((r) => (
-          <div
-            key={r.month}
-            className="dtr"
-            style={{ gridTemplateColumns: "120px repeat(7, 1fr)" }}
-          >
-            <div className="dtc nm" style={r.highlight ? { color: "var(--accent)" } : undefined}>
-              {r.month}
+      {isLive && data && (
+        <>
+          {/* Revenue */}
+          <ProjectionsTable title="Revenue" rows={data.revenue} statusTag="Live" />
+
+          <div className="two-col" style={{ marginTop: 24 }}>
+            {/* MRR */}
+            <div>
+              <ProjectionsTable title="Monthly Recurring Revenue" rows={data.mrr} />
             </div>
-            <div className="dtc mono">{r.gross}</div>
-            <div className="dtc mono">{r.feCash}</div>
-            <div className="dtc mono">{r.beCash}</div>
-            <div className="dtc mono">{r.mrr}</div>
-            <div className="dtc mono">{r.closes}</div>
-            <div className="dtc mono">
-              {r.cr ? <Badge variant={r.cr.variant}>{r.cr.label}</Badge> : "—"}
-            </div>
-            <div className="dtc mono">
-              {r.cpl ? <Badge variant={r.cpl.variant}>{r.cpl.label}</Badge> : "—"}
+            {/* AR */}
+            <div>
+              <ProjectionsTable title="Accounts Receivable" rows={data.ar} />
             </div>
           </div>
-        ))}
-        <div className="dttot" style={{ gridTemplateColumns: "120px repeat(7, 1fr)" }}>
-          <div>3-Mo Avg</div>
-          <div>$418,255</div>
-          <div>$120,266</div>
-          <div>$47,555</div>
-          <div>$93,004</div>
-          <div>21</div>
-          <div>19.0%</div>
-          <div>$73.40</div>
-        </div>
-      </div>
+
+          {/* Marketing */}
+          <ProjectionsTable title="Marketing & Ad Performance" rows={data.marketing} />
+
+          {/* Sales Funnel */}
+          <ProjectionsTable title="Sales Funnel" rows={data.funnel} />
+
+          {/* FE Closes */}
+          <ProjectionsTable title="Front-End Sales" rows={data.closes} />
+
+          {/* BE */}
+          <ProjectionsTable title="Back-End Sales" rows={data.backend} />
+
+          {/* Refunds */}
+          <ProjectionsTable title="Cancellations & Refunds" rows={data.refunds} />
+        </>
+      )}
     </div>
   );
 }
