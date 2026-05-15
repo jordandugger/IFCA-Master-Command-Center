@@ -99,12 +99,22 @@ function rankConstraints(constraints: Constraint[]): Constraint[] {
 // ── Main GET ───────────────────────────────────────────────────────────────
 export async function GET() {
   try {
-    const [pif, hyros, proj, be] = await Promise.all([
+    const results = await Promise.allSettled([
       fetchPif(),
       fetchHyros(),
       fetchProjections(),
       fetchBackend(),
     ]);
+    const errors: string[] = [];
+    results.forEach((r, i) => {
+      const name = ["pif", "hyros", "projections", "backend"][i];
+      if (r.status === "rejected") errors.push(`${name}:${String(r.reason).slice(0, 80)}`);
+      else if (r.value === null) errors.push(`${name}:null`);
+    });
+    const pif   = results[0].status === "fulfilled" ? results[0].value : null;
+    const hyros = results[1].status === "fulfilled" ? results[1].value : null;
+    const proj  = results[2].status === "fulfilled" ? results[2].value : null;
+    const be    = results[3].status === "fulfilled" ? results[3].value : null;
 
     const now = new Date();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -382,7 +392,8 @@ export async function GET() {
         hyrosOk: !!hyros,
         projectionsOk: !!proj,
         backendOk: !!be,
-      },
+        errors,
+      } as { pifOk: boolean; hyrosOk: boolean; projectionsOk: boolean; backendOk: boolean; errors?: string[] },
     };
 
     return NextResponse.json(summary);
