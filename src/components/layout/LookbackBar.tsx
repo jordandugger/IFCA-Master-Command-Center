@@ -72,11 +72,11 @@ export function LookbackBar() {
       </div>
       <div className={styles.divider} />
       <div className={styles.item}>
-        <div className={styles.label}>MTD Generated</div>
+        <div className={styles.label}>Gross Revenue MTD</div>
         <div className={styles.value} style={{ color: "var(--green)" }}>
           {lb ? fmt$(lb.mtdGenerated) : "—"}
         </div>
-        <div className={styles.note}>Live closed revenue</div>
+        <div className={styles.note}>APA §3.5 measure</div>
       </div>
       <div className={styles.item}>
         <div className={styles.label}>Projection</div>

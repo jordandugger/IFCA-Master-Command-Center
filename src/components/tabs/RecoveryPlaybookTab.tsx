@@ -90,26 +90,49 @@ function deriveBaseline(proj: ProjectionsSummary | null, mode: BaselineMode): In
   };
   if (!proj) return FALLBACK;
 
-  const k: keyof typeof proj.funnel[number] = mode === "current-pace" ? "pace" : "projection";
-  const approvedCalls    = findRow(proj.funnel, "Approved Booked Calls")?.[k] ?? FALLBACK.approvedCalls;
-  const showRate         = findRow(proj.funnel, "Show Rate")?.[k]              ?? FALLBACK.showRate;
-  const closeRate        = findRow(proj.closes, "Close Rate")?.[k]             ?? FALLBACK.closeRate;
-  const aov              = findRow(proj.closes, "Average Order Value")?.[k]    ?? FALLBACK.aov;
-  const feCollectionRate = findRow(proj.closes, "Collected %")?.[k]            ?? FALLBACK.feCollectionRate;
-  const beCollectionRate = findRow(proj.backend, "Cash Collection Rate")?.[k]  ?? FALLBACK.beCollectionRate;
-  const mrr              = findRow(proj.mrr, "Total MRR")?.[k]                 ?? FALLBACK.mrr;
-  const arInstallments   = findRow(proj.ar, "Total AR")?.[k]                   ?? FALLBACK.arInstallments;
+  // Resilient extractor: try pace → actual → projection → fallback
+  // Many cells in the projection sheet don't have pace populated for rate metrics,
+  // so we have to fall back gracefully or the calculator zeros out the FE pipeline.
+  const get = (rows: { label: string; actual: number; projection: number; pace: number }[] | undefined, q: string, fallback: number): number => {
+    const r = findRow(rows, q);
+    if (!r) return fallback;
+    const primary = mode === "current-pace" ? r.pace : r.projection;
+    if (primary > 0) return primary;
+    // Fall back through other columns
+    if (r.actual > 0) return r.actual;
+    if (r.projection > 0) return r.projection;
+    if (r.pace > 0) return r.pace;
+    return fallback;
+  };
+
+  const approvedCalls    = get(proj.funnel,   "Approved Booked Calls", FALLBACK.approvedCalls);
+  const showRate         = get(proj.funnel,   "Show Rate",             FALLBACK.showRate);
+  const closeRate        = get(proj.closes,   "Close Rate",            FALLBACK.closeRate);
+  const aov              = get(proj.closes,   "Average Order Value",   FALLBACK.aov);
+  const feCollectionRate = get(proj.closes,   "Collected %",           FALLBACK.feCollectionRate);
+  const beCollectionRate = get(proj.backend,  "Cash Collection Rate",  FALLBACK.beCollectionRate);
+  const mrr              = get(proj.mrr,      "Total MRR",             FALLBACK.mrr);
+  const arInstallments   = get(proj.ar,       "Total AR",              FALLBACK.arInstallments);
 
   // Derive BE Upsell Rate and BE AOV from BE Total Deals / FE Closes
   const beDealsRow = findRow(proj.backend, "Total Deals");
   const feClosesRow= findRow(proj.closes, "Closed Deals");
   const beRevRow   = findRow(proj.backend, "Revenue Generated");
-  const feCloses = mode === "current-pace" ? feClosesRow?.pace : feClosesRow?.projection;
-  const beDeals  = mode === "current-pace" ? beDealsRow?.pace  : beDealsRow?.projection;
-  const beRev    = mode === "current-pace" ? beRevRow?.pace    : beRevRow?.projection;
+  const pickRow = (r: { actual: number; projection: number; pace: number } | null): number => {
+    if (!r) return 0;
+    const primary = mode === "current-pace" ? r.pace : r.projection;
+    if (primary > 0) return primary;
+    if (r.actual > 0) return r.actual;
+    if (r.projection > 0) return r.projection;
+    if (r.pace > 0) return r.pace;
+    return 0;
+  };
+  const feCloses = pickRow(feClosesRow);
+  const beDeals  = pickRow(beDealsRow);
+  const beRev    = pickRow(beRevRow);
 
-  const beUpsellRate = (feCloses && feCloses > 0 && beDeals) ? (beDeals / feCloses) * 100 : FALLBACK.beUpsellRate;
-  const beAov        = (beDeals && beDeals > 0 && beRev) ? beRev / beDeals : FALLBACK.beAov;
+  const beUpsellRate = (feCloses > 0 && beDeals > 0) ? (beDeals / feCloses) * 100 : FALLBACK.beUpsellRate;
+  const beAov        = (beDeals > 0 && beRev > 0)    ? beRev / beDeals             : FALLBACK.beAov;
 
   return {
     approvedCalls: Math.round(approvedCalls),

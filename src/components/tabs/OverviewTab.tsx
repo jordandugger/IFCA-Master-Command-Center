@@ -144,9 +144,9 @@ export function OverviewTab({ onNavigate }: Props) {
         borderRadius: 12, padding: "18px 22px", marginBottom: 20,
       }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-          <HeroStat label="MTD Generated"     value={fmt$(rev?.mtdGenerated ?? 0)}  color="var(--green)" />
-          <HeroStat label="Original Projection" value={fmt$(rev?.mtdProjection ?? 0)} color="var(--text)" />
-          <HeroStat label="End-of-Month Pace"  value={fmt$(rev?.mtdPace ?? 0)}
+          <HeroStat label="Gross Revenue MTD"    value={fmt$(rev?.mtdGenerated ?? 0)}  color="var(--green)" />
+          <HeroStat label="Original Projection"  value={fmt$(rev?.mtdProjection ?? 0)} color="var(--text)" />
+          <HeroStat label="Gross Revenue Pace"   value={fmt$(rev?.mtdPace ?? 0)}
                     color={rev && rev.variancePct >= 0 ? "var(--green)" : rev && rev.variancePct >= -10 ? "var(--amber)" : "var(--red)"}
                     sub={rev ? `${rev.variancePct >= 0 ? "+" : ""}${rev.variancePct.toFixed(1)}% vs proj` : ""} />
           <HeroStat label="Days Remaining"     value={mc ? `${mc.daysRemaining}` : "—"}
@@ -208,8 +208,8 @@ export function OverviewTab({ onNavigate }: Props) {
           title="💰 Finance"
           onClick={() => handleDrill("projections")}
           rows={[
+            { label: "Gross Revenue (APA)",  actual: grossRev?.actual ?? 0,   projection: grossRev?.projection ?? 0,   fmt: fmt$ },
             { label: "Total Generated Rev",  actual: t?.totalGenRev ?? 0,     projection: t?.totalGenRevProj ?? 0,     fmt: fmt$ },
-            { label: "Gross Revenue",        actual: grossRev?.actual ?? 0,   projection: grossRev?.projection ?? 0,   fmt: fmt$ },
             { label: "Upfront Cash Collected", actual: upfrontCol?.actual ?? 0, projection: upfrontCol?.projection ?? 0, fmt: fmt$ },
             { label: "Total MRR",            actual: totalMRR?.actual ?? 0,   projection: totalMRR?.projection ?? 0,   fmt: fmt$ },
             { label: "Total AR",             actual: totalAR?.actual ?? 0,    projection: totalAR?.projection ?? 0,    fmt: fmt$ },

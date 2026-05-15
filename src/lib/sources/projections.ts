@@ -28,6 +28,9 @@ export interface ProjectionsSummary {
   backend: ProjectionRow[];
   refunds: ProjectionRow[];
   totals: {
+    grossRev: number;
+    grossRevProj: number;
+    grossRevPace: number;
     totalGenRev: number;
     totalGenRevProj: number;
     totalUpfrontCollected: number;
@@ -208,6 +211,11 @@ export async function fetchProjections(): Promise<ProjectionsSummary | null> {
       helper("Contract Cancel %", "percent"),
     ].filter(Boolean) as ProjectionRow[];
 
+    // Gross Revenue is the headline metric per APA §3.5 — legal $550K lookback measure
+    const grossRev       = revenue.find(r => r.label.includes("GROSS REVENUE"))?.actual ?? 0;
+    const grossRevProj   = revenue.find(r => r.label.includes("GROSS REVENUE"))?.projection ?? 0;
+    const grossRevPace   = revenue.find(r => r.label.includes("GROSS REVENUE"))?.pace ?? 0;
+    // Keep Total Generated Revenue available for reference
     const totalGenRev    = revenue.find(r => r.label.includes("Total Generated Revenue"))?.actual ?? 0;
     const totalGenRevProj= revenue.find(r => r.label.includes("Total Generated Revenue"))?.projection ?? 0;
     const totalUpfront   = revenue.find(r => r.label.includes("UPFRONT COLLECTED"))?.actual ?? 0;
@@ -233,6 +241,9 @@ export async function fetchProjections(): Promise<ProjectionsSummary | null> {
       backend,
       refunds,
       totals: {
+        grossRev,
+        grossRevProj,
+        grossRevPace,
         totalGenRev,
         totalGenRevProj,
         totalUpfrontCollected: totalUpfront,

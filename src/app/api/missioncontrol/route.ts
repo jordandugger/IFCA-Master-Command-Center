@@ -129,9 +129,10 @@ export async function GET() {
     const dayNumber = Math.floor((now.getTime() - lookbackStart.getTime()) / 86400000) + 1;
     const planBDate = new Date(lookbackStart.getTime() + 120 * 86400000);
     const daysToPlanB = Math.floor((planBDate.getTime() - now.getTime()) / 86400000);
-    const mtdGenerated  = proj?.totals.totalGenRev      ?? 0;
-    const mtdProjection = proj?.totals.totalGenRevProj  ?? 0;
-    const mtdPace       = proj?.revenue.find(r => r.label.includes("Total Generated"))?.pace ?? 0;
+    // Gross Revenue is the APA §3.5 legal measure for the $550K lookback
+    const mtdGenerated  = proj?.totals.grossRev     ?? 0;
+    const mtdProjection = proj?.totals.grossRevProj ?? 0;
+    const mtdPace       = proj?.totals.grossRevPace ?? 0;
     const gap$ = lookbackTarget - mtdPace;
     const progressPct = lookbackTarget > 0 ? (mtdPace / lookbackTarget) * 100 : 0;
 
