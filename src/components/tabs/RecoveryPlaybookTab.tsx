@@ -228,38 +228,79 @@ export function RecoveryPlaybookTab() {
         </div>
       </div>
 
-      {/* Baseline mode toggle + reset */}
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 20, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
-          Baseline:
-        </span>
-        {(["current-pace", "month-projection"] as const).map((m) => (
-          <button
-            key={m}
-            onClick={() => setBaseMode(m)}
-            style={{
-              padding: "6px 14px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-              cursor: "pointer", fontFamily: "inherit",
-              background: baseMode === m ? "var(--accent)" : "transparent",
-              color:      baseMode === m ? "#000"          : "var(--text)",
-              border:     baseMode === m ? "1px solid var(--accent)" : "1px solid var(--border)",
-            }}
-          >
-            {m === "current-pace" ? "📍 Current MTD Pace" : "📊 Original Month Projection"}
-          </button>
-        ))}
-        <button
-          onClick={resetToBaseline}
-          style={{
-            padding: "6px 14px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-            cursor: "pointer", fontFamily: "inherit",
-            background: "transparent", color: "var(--muted)",
-            border: "1px dashed var(--border)", marginLeft: "auto",
-          }}
-        >
-          ↻ Reset sliders to baseline
-        </button>
-      </div>
+      {/* Baseline mode toggle — prominent segmented control */}
+      {(() => {
+        const paceBaseline = deriveBaseline(proj, "current-pace");
+        const projBaseline = deriveBaseline(proj, "month-projection");
+        const paceGross = calc(paceBaseline).grossRevenue;
+        const projGross = calc(projBaseline).grossRevenue;
+        const options = [
+          { mode: "month-projection" as const, icon: "📊", label: "Original Month Projection", sub: "Set at month start by finance team", gross: projGross },
+          { mode: "current-pace"      as const, icon: "📍", label: "Current MTD Pace",          sub: "Trending forward from today",       gross: paceGross },
+        ];
+        return (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 8 }}>
+              ⚙️ Baseline Mode — Click to load sliders
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "stretch" }}>
+              {options.map((o) => {
+                const active = baseMode === o.mode;
+                const grossColor2 = o.gross >= LOOKBACK_TARGET ? "var(--green)"
+                                  : o.gross >= TIER2_FLOOR    ? "var(--amber)"
+                                  : "var(--red)";
+                return (
+                  <button
+                    key={o.mode}
+                    onClick={() => setBaseMode(o.mode)}
+                    style={{
+                      padding: "14px 18px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit",
+                      textAlign: "left",
+                      background: active ? "rgba(59,130,246,0.12)" : "var(--bg-card)",
+                      border: active ? "2px solid var(--accent)" : "1px solid var(--border)",
+                      color: "var(--text)",
+                      position: "relative",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 18 }}>{o.icon}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>{o.label}</span>
+                      </div>
+                      {active && (
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 0.7 }}>
+                          ● Active
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 8 }}>{o.sub}</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <span style={{ fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                        Projected Gross Revenue
+                      </span>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: grossColor2, fontFamily: "'IBM Plex Mono', monospace" }}>
+                        {fmt$(o.gross)}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+              <button
+                onClick={resetToBaseline}
+                title="Reset sliders to current baseline values"
+                style={{
+                  padding: "0 18px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit",
+                  background: "transparent", color: "var(--muted)",
+                  border: "1px dashed var(--border)",
+                  fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+                }}
+              >
+                ↻ Reset<br/>sliders
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Live MTD strip */}
       {mc && (
