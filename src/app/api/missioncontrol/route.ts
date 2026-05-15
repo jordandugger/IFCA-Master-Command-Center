@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import type { PifSummary }         from "@/app/api/pif/route";
-import type { HyrosSummary }       from "@/app/api/hyros/route";
-import type { ProjectionsSummary } from "@/app/api/projections/route";
-import type { BackendSummary }     from "@/app/api/backend/route";
+import { fetchPif }         from "@/app/api/pif/route";
+import { fetchHyros }       from "@/app/api/hyros/route";
+import { fetchProjections } from "@/app/api/projections/route";
+import { fetchBackend }     from "@/app/api/backend/route";
 
 // ── Constraint Engine ──────────────────────────────────────────────────────
 // A constraint is an off-KPI metric ranked by:
@@ -70,24 +70,6 @@ export interface MissionControlSummary {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-function getBaseUrl(): string {
-  // In production on Vercel, VERCEL_URL is the deploy URL
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
-  return "http://localhost:3000";
-}
-
-async function safeFetch<T>(path: string): Promise<T | null> {
-  try {
-    const url = `${getBaseUrl()}${path}`;
-    const res = await fetch(url, { next: { revalidate: 120 } });
-    if (!res.ok) return null;
-    const j = await res.json();
-    if (j.error) return null;
-    return j as T;
-  } catch { return null; }
-}
-
 function scorePillar(constraints: Constraint[], pillar: Constraint["pillar"], totalMetrics: number): PillarHealth {
   const pillarConstraints = constraints.filter(c => c.pillar === pillar);
   const reds   = pillarConstraints.filter(c => c.severity === "red").length;
@@ -118,10 +100,10 @@ function rankConstraints(constraints: Constraint[]): Constraint[] {
 export async function GET() {
   try {
     const [pif, hyros, proj, be] = await Promise.all([
-      safeFetch<PifSummary>("/api/pif"),
-      safeFetch<HyrosSummary>("/api/hyros"),
-      safeFetch<ProjectionsSummary>("/api/projections"),
-      safeFetch<BackendSummary>("/api/backend"),
+      fetchPif(),
+      fetchHyros(),
+      fetchProjections(),
+      fetchBackend(),
     ]);
 
     const now = new Date();

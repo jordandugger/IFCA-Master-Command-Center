@@ -104,7 +104,7 @@ async function fetchSheetCSV(id: string, gid?: string): Promise<string> {
   return res.text();
 }
 
-export async function GET() {
+export async function fetchBackend(): Promise<BackendSummary | null> {
   try {
     const now = new Date();
     const monthName = now.toLocaleString("en-US", { month: "long" });
@@ -271,9 +271,15 @@ export async function GET() {
       npsCount,
     };
 
-    return NextResponse.json(summary);
+    return summary;
   } catch (err) {
     console.error("Backend route error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return null;
   }
+}
+
+export async function GET() {
+  const data = await fetchBackend();
+  if (!data) return NextResponse.json({ error: "Failed to fetch backend data" }, { status: 500 });
+  return NextResponse.json(data);
 }

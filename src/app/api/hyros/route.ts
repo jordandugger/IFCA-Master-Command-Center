@@ -57,7 +57,7 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-export async function GET() {
+export async function fetchHyros(): Promise<HyrosSummary | null> {
   try {
     const res = await fetch(CSV_URL, {
       next: { revalidate: 300 },
@@ -141,9 +141,15 @@ export async function GET() {
       campaigns,
     };
 
-    return NextResponse.json(summary);
+    return summary;
   } catch (err) {
     console.error("Hyros sheet error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return null;
   }
+}
+
+export async function GET() {
+  const data = await fetchHyros();
+  if (!data) return NextResponse.json({ error: "Failed to fetch Hyros data" }, { status: 500 });
+  return NextResponse.json(data);
 }

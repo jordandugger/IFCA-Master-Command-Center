@@ -79,7 +79,7 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-export async function GET() {
+export async function fetchPif(): Promise<PifSummary | null> {
   try {
     const res = await fetch(CSV_URL, {
       next: { revalidate: 120 },
@@ -190,9 +190,15 @@ export async function GET() {
       setters,
     };
 
-    return NextResponse.json(summary);
+    return summary;
   } catch (err) {
     console.error("PIF fetch error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return null;
   }
+}
+
+export async function GET() {
+  const data = await fetchPif();
+  if (!data) return NextResponse.json({ error: "Failed to fetch PIF data" }, { status: 500 });
+  return NextResponse.json(data);
 }

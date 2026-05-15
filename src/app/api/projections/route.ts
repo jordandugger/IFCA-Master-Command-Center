@@ -95,7 +95,7 @@ function buildRow(
   };
 }
 
-export async function GET() {
+export async function fetchProjections(): Promise<ProjectionsSummary | null> {
   try {
     const now = new Date();
     const monthName = now.toLocaleString("en-US", { month: "long" });
@@ -247,9 +247,15 @@ export async function GET() {
       },
     };
 
-    return NextResponse.json(summary);
+    return summary;
   } catch (err) {
     console.error("Projections error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return null;
   }
+}
+
+export async function GET() {
+  const data = await fetchProjections();
+  if (!data) return NextResponse.json({ error: "Failed to fetch projections" }, { status: 500 });
+  return NextResponse.json(data);
 }
