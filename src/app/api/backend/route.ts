@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const revalidate = 120;
+
 const SC_LEADERBOARD_ID = "1rqgskIcgKwvx0idu4yyhzLmH45beyf1sstXFJYsqPGI";
 const UPSELL_TRACKER_ID = "1Og159NlTwCEOAw0bnNJOjEOwgdTSugJLvju_z21GNSw";
 const CANCELLATIONS_ID  = "1ahu4O6H8D8Pot6S4pWo1eECkVPUTCS4hon7jRQMVuCw";
@@ -99,7 +101,7 @@ async function fetchSheetCSV(id: string, gid?: string): Promise<string> {
   const url = gid
     ? `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`
     : `https://docs.google.com/spreadsheets/d/${id}/export?format=csv`;
-  const res = await fetch(url, { next: { revalidate: 300 }, headers: { "User-Agent": "Mozilla/5.0" } });
+  const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0" } });
   if (!res.ok) throw new Error(`Sheet ${id} fetch ${res.status}`);
   return res.text();
 }

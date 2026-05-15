@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const revalidate = 120;
+
 // Primary source: scraped PIF Perfect historical data (323 records, Apr–May 2026)
 const SCRAPED_SHEET_ID = "1OxJvegMCGBc2yDddRl0pBfIAtxADD6eotz7SUWo6GZg";
 const CSV_URL = `https://docs.google.com/spreadsheets/d/${SCRAPED_SHEET_ID}/export?format=csv`;
@@ -82,7 +84,7 @@ function parseCSVLine(line: string): string[] {
 export async function fetchPif(): Promise<PifSummary | null> {
   try {
     const res = await fetch(CSV_URL, {
-      next: { revalidate: 120 },
+      cache: "no-store",
       headers: { "User-Agent": "Mozilla/5.0" },
     });
 

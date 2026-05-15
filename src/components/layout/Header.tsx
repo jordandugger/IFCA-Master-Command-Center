@@ -2,14 +2,15 @@
 
 import styles from "./Header.module.css";
 
-export type TabId = "overview" | "ads" | "sales" | "backend" | "projections";
+export type TabId = "overview" | "projections" | "recovery" | "ads" | "sales" | "backend";
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: "overview", label: "Overview" },
-  { id: "ads", label: "Ads" },
-  { id: "sales", label: "Sales" },
-  { id: "backend", label: "Back-End" },
+  { id: "overview",    label: "Overview" },
   { id: "projections", label: "Projections" },
+  { id: "recovery",    label: "Recovery Playbook" },
+  { id: "ads",         label: "Ads" },
+  { id: "sales",       label: "Sales" },
+  { id: "backend",     label: "Back-End" },
 ];
 
 interface HeaderProps {
@@ -40,13 +41,13 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
       <div className={styles.right}>
         <div className={styles.statusIndicator}>
           <div className={styles.statusDot} />
-          <span className={styles.statusLabel}>Seeded · feeds pending</span>
+          <span className={styles.statusLabel}>Live · 4 sources</span>
         </div>
         <button
           className={styles.ctaBtn}
-          onClick={() => onTabChange("projections")}
+          onClick={() => onTabChange("recovery")}
         >
-          Set Projections →
+          Recovery Playbook →
         </button>
       </div>
     </header>

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const revalidate = 120;
+
 const SHEET_ID = "1NFQ_FIrUQPEEVs4GIT3sK2U08BcO315GFg7ry4SiT_o";
 const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
@@ -60,7 +62,7 @@ function parseCSVLine(line: string): string[] {
 export async function fetchHyros(): Promise<HyrosSummary | null> {
   try {
     const res = await fetch(CSV_URL, {
-      next: { revalidate: 300 },
+      cache: "no-store",
       headers: { "User-Agent": "Mozilla/5.0" },
     });
 

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+export const revalidate = 120;
 import { fetchPif }         from "@/app/api/pif/route";
 import { fetchHyros }       from "@/app/api/hyros/route";
 import { fetchProjections } from "@/app/api/projections/route";

@@ -8,6 +8,7 @@ import { AdsTab } from "@/components/tabs/AdsTab";
 import { SalesTab } from "@/components/tabs/SalesTab";
 import { BackEndTab } from "@/components/tabs/BackEndTab";
 import { ProjectionsTab } from "@/components/tabs/ProjectionsTab";
+import { RecoveryPlaybookTab } from "@/components/tabs/RecoveryPlaybookTab";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
@@ -15,10 +16,11 @@ export default function Dashboard() {
   const renderTab = () => {
     switch (activeTab) {
       case "overview":    return <OverviewTab onNavigate={setActiveTab} />;
+      case "projections": return <ProjectionsTab />;
+      case "recovery":    return <RecoveryPlaybookTab />;
       case "ads":         return <AdsTab />;
       case "sales":       return <SalesTab />;
       case "backend":     return <BackEndTab />;
-      case "projections": return <ProjectionsTab />;
     }
   };
 

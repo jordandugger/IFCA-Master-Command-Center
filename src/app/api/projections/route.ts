@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const revalidate = 120;
+
 const SHEET_ID = "14eqjbLlS_1LMmHHuoE3V1HyoC62ilyO4FeMqyHD9AFc";
 
 export interface ProjectionRow {
@@ -105,7 +107,7 @@ export async function fetchProjections(): Promise<ProjectionsSummary | null> {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
 
     const res = await fetch(url, {
-      next: { revalidate: 300 },
+      cache: "no-store",
       headers: { "User-Agent": "Mozilla/5.0" },
     });
     if (!res.ok) throw new Error(`Sheet fetch ${res.status} for tab "${tabName}"`);
