@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { StatusTag } from "@/components/ui/Badge";
-import type { HyrosSummary } from "@/app/api/hyros/route";
+import type { HyrosSummary } from "@/lib/sources/hyros";
 
 function fmt$(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n.toFixed(0)}`;

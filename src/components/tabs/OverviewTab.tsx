@@ -5,7 +5,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { TabId } from "@/components/layout/Header";
 import type { MissionControlSummary, Severity } from "@/app/api/missioncontrol/route";
-import type { ProjectionsSummary } from "@/app/api/projections/route";
+import type { ProjectionsSummary } from "@/lib/sources/projections";
 
 interface Props {
   onNavigate?: (tab: TabId) => void;

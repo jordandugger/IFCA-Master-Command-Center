@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatusTag } from "@/components/ui/Badge";
-import type { ProjectionsSummary, ProjectionRow } from "@/app/api/projections/route";
+import type { ProjectionsSummary, ProjectionRow } from "@/lib/sources/projections";
 import styles from "./ProjectionsTab.module.css";
 
 function fmt$(n: number): string {

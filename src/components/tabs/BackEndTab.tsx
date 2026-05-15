@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Badge, StatusTag } from "@/components/ui/Badge";
-import type { BackendSummary } from "@/app/api/backend/route";
+import type { BackendSummary } from "@/lib/sources/backend";
 
 function fmt$(n: number): string {
   if (n === 0) return "—";

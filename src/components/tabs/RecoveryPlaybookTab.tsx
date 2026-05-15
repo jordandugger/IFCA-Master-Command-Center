@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import type { ProjectionsSummary } from "@/app/api/projections/route";
+import type { ProjectionsSummary } from "@/lib/sources/projections";
 import type { MissionControlSummary } from "@/app/api/missioncontrol/route";
 
 // ── Constants (legal targets from APA §3.5) ──────────────────────────────────

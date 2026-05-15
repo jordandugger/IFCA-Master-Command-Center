@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
 export const revalidate = 120;
-import { fetchPif }         from "@/app/api/pif/route";
-import { fetchHyros }       from "@/app/api/hyros/route";
-import { fetchProjections } from "@/app/api/projections/route";
-import { fetchBackend }     from "@/app/api/backend/route";
+import { fetchPif }         from "@/lib/sources/pif";
+import { fetchHyros }       from "@/lib/sources/hyros";
+import { fetchProjections } from "@/lib/sources/projections";
+import { fetchBackend }     from "@/lib/sources/backend";
 
 // ── Constraint Engine ──────────────────────────────────────────────────────
 // A constraint is an off-KPI metric ranked by:

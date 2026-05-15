@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Badge, StatusTag } from "@/components/ui/Badge";
-import type { PifSummary } from "@/app/api/pif/route";
+import type { PifSummary } from "@/lib/sources/pif";
 
 function fmt$(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n.toLocaleString()}`;
