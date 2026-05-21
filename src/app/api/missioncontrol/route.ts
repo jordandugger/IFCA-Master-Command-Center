@@ -5,6 +5,7 @@ import { fetchPif }         from "@/lib/sources/pif";
 import { fetchHyros }       from "@/lib/sources/hyros";
 import { fetchProjections } from "@/lib/sources/projections";
 import { fetchBackend }     from "@/lib/sources/backend";
+import { fetchMeta }        from "@/lib/sources/meta";
 
 // ── Constraint Engine ──────────────────────────────────────────────────────
 // A constraint is an off-KPI metric ranked by:
@@ -68,6 +69,7 @@ export interface MissionControlSummary {
     hyrosOk: boolean;
     projectionsOk: boolean;
     backendOk: boolean;
+    metaOk: boolean;
   };
 }
 
@@ -106,10 +108,11 @@ export async function GET() {
       fetchHyros(),
       fetchProjections(),
       fetchBackend(),
+      fetchMeta(),
     ]);
     const errors: string[] = [];
     results.forEach((r, i) => {
-      const name = ["pif", "hyros", "projections", "backend"][i];
+      const name = ["pif", "hyros", "projections", "backend", "meta"][i];
       if (r.status === "rejected") errors.push(`${name}:${String(r.reason).slice(0, 80)}`);
       else if (r.value === null) errors.push(`${name}:null`);
     });
@@ -117,6 +120,7 @@ export async function GET() {
     const hyros = results[1].status === "fulfilled" ? results[1].value : null;
     const proj  = results[2].status === "fulfilled" ? results[2].value : null;
     const be    = results[3].status === "fulfilled" ? results[3].value : null;
+    const meta  = results[4].status === "fulfilled" ? results[4].value : null;
 
     const now = new Date();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -248,6 +252,56 @@ export async function GET() {
           impact$: (2 - roas) * hyros.totals.spend,
           severity: roas < 1.2 ? "red" : "amber",
           reason: `ROAS ${roas.toFixed(2)}x vs 2.0x target`,
+          drillTo: "ads",
+        });
+      }
+    }
+
+    // ADS pillar — Meta auction health constraints
+    if (meta?.totals && meta.totals.spend > 0) {
+      const ctr  = meta.totals.ctr;
+      const freq = meta.totals.frequency;
+
+      if (ctr > 0 && ctr < 1.5) {
+        constraints.push({
+          pillar: "ads",
+          metric: "Meta CTR",
+          actual: `${ctr.toFixed(2)}%`,
+          target: ">1.5%",
+          variancePct: ((ctr - 1.5) / 1.5) * 100,
+          impact$: meta.totals.spend * 0.2,  // rough: weak CTR means ~20% of spend underperforming
+          severity: ctr < 1.0 ? "red" : "amber",
+          reason: `Meta CTR ${ctr.toFixed(2)}% — creative needs refresh`,
+          drillTo: "ads",
+        });
+      }
+
+      if (freq > 3.5) {
+        constraints.push({
+          pillar: "ads",
+          metric: "Meta Frequency",
+          actual: freq.toFixed(2),
+          target: "<3.5",
+          variancePct: ((freq - 3.5) / 3.5) * 100,
+          impact$: meta.totals.spend * 0.15,
+          severity: freq > 4.5 ? "red" : "amber",
+          reason: `Frequency ${freq.toFixed(2)} — ad fatigue setting in`,
+          drillTo: "ads",
+        });
+      }
+
+      // Surface most expensive fatigued creative
+      if (meta.fatigueAlerts.length > 0) {
+        const worst = meta.fatigueAlerts.sort((a, b) => b.spend - a.spend)[0];
+        constraints.push({
+          pillar: "ads",
+          metric: `${meta.fatigueAlerts.length} Fatigued Creatives`,
+          actual: worst.adName.slice(0, 40),
+          target: "Refresh",
+          variancePct: 0,
+          impact$: meta.fatigueAlerts.reduce((s, a) => s + a.spend, 0) * 0.2,
+          severity: meta.fatigueAlerts.length > 3 ? "red" : "amber",
+          reason: `Top fatigued ad: ${worst.reason}`,
           drillTo: "ads",
         });
       }
@@ -395,8 +449,9 @@ export async function GET() {
         hyrosOk: !!hyros,
         projectionsOk: !!proj,
         backendOk: !!be,
+        metaOk: !!meta && meta.totals.spend > 0,
         errors,
-      } as { pifOk: boolean; hyrosOk: boolean; projectionsOk: boolean; backendOk: boolean; errors?: string[] },
+      } as { pifOk: boolean; hyrosOk: boolean; projectionsOk: boolean; backendOk: boolean; metaOk: boolean; errors?: string[] },
     };
 
     return NextResponse.json(summary);
