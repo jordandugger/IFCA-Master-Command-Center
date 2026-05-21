@@ -5,7 +5,7 @@ import { KpiCard } from "@/components/ui/KpiCard";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Badge, StatusTag } from "@/components/ui/Badge";
 import type { HyrosSummary } from "@/lib/sources/hyros";
-import type { MetaSummary } from "@/lib/sources/meta";
+import type { MetaSummary, Lifecycle, Action } from "@/lib/sources/meta";
 
 function fmt$(n: number) {
   if (!n) return "—";
@@ -259,6 +259,129 @@ export function AdsTab() {
         </div>
       </div>
 
+      {/* ── NEW: Daily Budget Pacing + Trend Deltas ── */}
+      {metaLive && meta && (
+        <>
+          <SectionTitle>
+            Daily Pacing & 7d Trends{" "}
+            <StatusTag variant={meta.pacing.status === "on-track" ? "live" : "pending"}>
+              {meta.pacing.status === "on-track" ? "On Track" :
+               meta.pacing.status === "overpacing" ? "Overpacing" : "Underpacing"}
+            </StatusTag>
+          </SectionTitle>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+            {/* Pacing card */}
+            <div className="pbox">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                <PacingStat label="Spend Today"      value={fmt$(meta.pacing.spendToday)}     sub="vs yesterday" />
+                <PacingStat label="Yesterday"        value={fmt$(meta.pacing.spendYesterday)} sub="last 24h"     />
+                <PacingStat label="7d Total"         value={fmt$(meta.pacing.spend7d)}        sub="trailing 7 days" />
+                <PacingStat label="MTD Spend"        value={fmt$(meta.pacing.spendMtd)}       sub={`Day ${meta.pacing.daysElapsed} of ${meta.pacing.daysInMonth}`} />
+                <PacingStat label="Daily Avg"        value={fmt$(meta.pacing.dailyAvg)}       sub="MTD pace"     />
+                <PacingStat label="Projected EOM"
+                  value={<span style={{ color: meta.pacing.status === "on-track" ? "var(--green)" : meta.pacing.status === "overpacing" ? "var(--red)" : "var(--amber)" }}>{fmt$(meta.pacing.paceEom)}</span>}
+                  sub={`vs $${(meta.pacing.target / 1000).toFixed(0)}K target (${meta.pacing.variancePct >= 0 ? "+" : ""}${meta.pacing.variancePct.toFixed(0)}%)`} />
+              </div>
+            </div>
+
+            {/* Trend deltas */}
+            <div className="pbox">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                {meta.trends.length === 0 ? (
+                  <div style={{ color: "var(--muted)", fontSize: 11, gridColumn: "1/-1", textAlign: "center", padding: 20 }}>
+                    Insufficient history for trend delta — need 14d data
+                  </div>
+                ) : (
+                  meta.trends.map((t) => <TrendDeltaCard key={t.metric} delta={t} />)
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── NEW: Kill List + Scale List + Lifecycle Counts ── */}
+      {metaLive && meta && (
+        <>
+          <SectionTitle>
+            🎯 Action Items — Kill / Scale / Lifecycle{" "}
+            <StatusTag variant={meta.killList.length > 0 ? "pending" : "live"}>
+              {meta.killList.length + meta.scaleList.length} actions
+            </StatusTag>
+          </SectionTitle>
+
+          {/* Lifecycle counts strip */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 16 }}>
+            <LifecycleCard label="Testing"   count={meta.lifecycleCounts.testing}   color="var(--muted)"  desc="< $500 spent" />
+            <LifecycleCard label="Proven"    count={meta.lifecycleCounts.proven}    color="var(--green)"  desc="Hitting target" />
+            <LifecycleCard label="Mature"    count={meta.lifecycleCounts.mature}    color="var(--gold)"   desc="$5K+ stable"    />
+            <LifecycleCard label="Watch"     count={meta.lifecycleCounts.watch}     color="var(--amber)"  desc="Borderline"     />
+            <LifecycleCard label="Declining" count={meta.lifecycleCounts.declining} color="#f97316"       desc="Fatiguing"      />
+            <LifecycleCard label="Failed"    count={meta.lifecycleCounts.failed}    color="var(--red)"    desc="CPL 2× target"  />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+            {/* KILL LIST */}
+            <div>
+              <div style={{
+                background: "rgba(239,68,68,0.06)",
+                border: "1px solid rgba(239,68,68,0.3)",
+                borderRadius: 8, padding: "12px 14px", marginBottom: 8,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "var(--red)", fontSize: 13, fontWeight: 700 }}>🔴 KILL LIST</span>
+                  <span style={{ fontSize: 10, color: "var(--muted)" }}>
+                    {meta.killList.length === 0 ? "No kills needed" : `Save: ~$${meta.killList.reduce((s, a) => s + a.spend, 0).toLocaleString()}/mo wasted spend`}
+                  </span>
+                </div>
+              </div>
+              {meta.killList.length === 0 && (
+                <div style={{
+                  background: "rgba(16,185,129,0.06)",
+                  border: "1px solid rgba(16,185,129,0.2)",
+                  borderRadius: 8, padding: "16px 18px", textAlign: "center",
+                  color: "var(--green)", fontSize: 12,
+                }}>
+                  ✓ No ads meeting kill criteria right now.
+                </div>
+              )}
+              {meta.killList.slice(0, 5).map((a) => (
+                <AdActionRow key={a.id} ad={a} variant="kill" />
+              ))}
+            </div>
+
+            {/* SCALE LIST */}
+            <div>
+              <div style={{
+                background: "rgba(16,185,129,0.06)",
+                border: "1px solid rgba(16,185,129,0.3)",
+                borderRadius: 8, padding: "12px 14px", marginBottom: 8,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: "var(--green)", fontSize: 13, fontWeight: 700 }}>🟢 SCALE LIST</span>
+                  <span style={{ fontSize: 10, color: "var(--muted)" }}>
+                    {meta.scaleList.length === 0 ? "No scale candidates" : `Add: ~+50% budget on these`}
+                  </span>
+                </div>
+              </div>
+              {meta.scaleList.length === 0 && (
+                <div style={{
+                  background: "rgba(245,158,11,0.06)",
+                  border: "1px solid rgba(245,158,11,0.2)",
+                  borderRadius: 8, padding: "16px 18px", textAlign: "center",
+                  color: "var(--amber)", fontSize: 12,
+                }}>
+                  ⏳ No clear winners yet — keep testing.
+                </div>
+              )}
+              {meta.scaleList.slice(0, 5).map((a) => (
+                <AdActionRow key={a.id} ad={a} variant="scale" />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* ── Hyros Active Campaign Breakdown (existing) ── */}
       <SectionTitle>
         Hyros Campaign Breakdown — Revenue Attribution{" "}
@@ -356,15 +479,17 @@ export function AdsTab() {
       {metaLive && meta && meta.ads.length > 0 && (
         <>
           <SectionTitle>
-            Top Creative Performance — Top 20 by Spend{" "}
+            Top Creative Performance — Top 30 by Spend{" "}
             <StatusTag variant="live">Meta</StatusTag>
           </SectionTitle>
           <ScrollTable
             cols={[
-              { label: "Ad", w: "2.5fr" },
-              { label: "Campaign", w: "2fr" },
+              { label: "Ad", w: "2.2fr" },
+              { label: "Lifecycle" },
+              { label: "Action" },
               { label: "Spend" },
-              { label: "Impressions" },
+              { label: "Leads" },
+              { label: "CPL" },
               { label: "CTR" },
               { label: "CPM" },
               { label: "Freq" },
@@ -375,10 +500,12 @@ export function AdsTab() {
           >
             {meta.ads.map((a) => (
               <Row key={a.id} cols={[
-                { v: shortName(a.name, 45), w: "2.5fr", nm: true, title: a.name },
-                { v: shortName(a.campaignName, 35), w: "2fr", title: a.campaignName },
+                { v: <span title={`${a.name} · ${a.campaignName}`}>{shortName(a.name, 40)}</span>, w: "2.2fr", nm: true },
+                { v: lifecycleBadge(a.lifecycle) },
+                { v: <span title={a.actionReason}>{actionBadge(a.action)}</span> },
                 { v: fmt$(a.spend) },
-                { v: fmtN(a.impressions) },
+                { v: a.leads > 0 ? a.leads : "—" },
+                { v: a.cpl > 0 ? <span style={{ color: a.cpl <= 50 ? "var(--green)" : a.cpl <= 88 ? "var(--amber)" : "var(--red)" }}>{fmt$d(a.cpl)}</span> : "—" },
                 { v: <span style={{ color: a.ctr >= 1.5 ? "var(--green)" : a.ctr >= 1 ? "var(--amber)" : "var(--red)" }}>{fmtPctRaw(a.ctr)}</span> },
                 { v: fmt$d(a.cpm) },
                 { v: <span style={{ color: a.frequency <= 2.5 ? "var(--green)" : a.frequency <= 3.5 ? "var(--amber)" : "var(--red)" }}>{fmtFreq(a.frequency)}</span> },
@@ -540,6 +667,114 @@ function Row({ cols }: { cols: { v: React.ReactNode; w?: string; nm?: boolean; t
       {cols.map((c, i) => (
         <div key={i} className={c.nm ? "dtc nm" : "dtc mono"} title={c.title}>{c.v}</div>
       ))}
+    </div>
+  );
+}
+
+// ── Lifecycle + Action badges ────────────────────────────────────────────────
+function lifecycleBadge(l: Lifecycle) {
+  const map: Record<Lifecycle, { variant: "green" | "amber" | "red" | "muted" | "blue"; label: string }> = {
+    testing:   { variant: "muted",  label: "Testing"   },
+    proven:    { variant: "green",  label: "Proven"    },
+    mature:    { variant: "amber",  label: "Mature"    },
+    watch:     { variant: "amber",  label: "Watch"     },
+    declining: { variant: "red",    label: "Declining" },
+    failed:    { variant: "red",    label: "Failed"    },
+  };
+  const m = map[l];
+  return <Badge variant={m.variant}>{m.label}</Badge>;
+}
+
+function actionBadge(a: Action) {
+  const map: Record<Action, { variant: "green" | "amber" | "red" | "muted" | "blue"; label: string }> = {
+    scale:   { variant: "green", label: "🟢 SCALE" },
+    kill:    { variant: "red",   label: "🔴 KILL"  },
+    watch:   { variant: "amber", label: "🟡 WATCH" },
+    hold:    { variant: "muted", label: "⚪ HOLD"  },
+    testing: { variant: "blue",  label: "🔵 TEST"  },
+  };
+  const m = map[a];
+  return <Badge variant={m.variant}>{m.label}</Badge>;
+}
+
+// ── Pacing + Trend cards ─────────────────────────────────────────────────────
+function PacingStat({ label, value, sub }: { label: string; value: React.ReactNode; sub: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: 9, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, marginTop: 2, fontFamily: "'IBM Plex Mono', monospace" }}>{value}</div>
+      <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 2 }}>{sub}</div>
+    </div>
+  );
+}
+
+function TrendDeltaCard({ delta }: { delta: import("@/lib/sources/meta").MetaTrendDelta }) {
+  const fmt = (v: number): string => {
+    if (delta.unit === "currency") return v >= 1000 ? `$${(v / 1000).toFixed(1)}K` : `$${v.toFixed(0)}`;
+    if (delta.unit === "percent")  return `${v.toFixed(2)}%`;
+    if (delta.unit === "number")   return v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0);
+    return v.toFixed(2);
+  };
+  const arrow = delta.direction === "up" ? "▲" : delta.direction === "down" ? "▼" : "—";
+  const color = delta.direction === "flat" ? "var(--muted)" : delta.isGood ? "var(--green)" : "var(--red)";
+  return (
+    <div>
+      <div style={{ fontSize: 9, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+        {delta.metric}
+      </div>
+      <div style={{ fontSize: 16, fontWeight: 700, marginTop: 2, fontFamily: "'IBM Plex Mono', monospace" }}>
+        {fmt(delta.current)}
+      </div>
+      <div style={{ fontSize: 10, color, marginTop: 2, fontFamily: "'IBM Plex Mono', monospace" }}>
+        {arrow} {delta.deltaPct >= 0 ? "+" : ""}{delta.deltaPct.toFixed(1)}% WoW
+      </div>
+    </div>
+  );
+}
+
+function LifecycleCard({ label, count, color, desc }: { label: string; count: number; color: string; desc: string }) {
+  return (
+    <div style={{
+      background: "var(--bg-card)", border: `1px solid var(--border)`,
+      borderRadius: 8, padding: "10px 12px",
+      borderTop: `3px solid ${color}`,
+    }}>
+      <div style={{ fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color, marginTop: 2, fontFamily: "'IBM Plex Mono', monospace" }}>
+        {count}
+      </div>
+      <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 2 }}>{desc}</div>
+    </div>
+  );
+}
+
+function AdActionRow({ ad, variant }: { ad: import("@/lib/sources/meta").MetaAd; variant: "kill" | "scale" }) {
+  const borderColor = variant === "kill" ? "var(--red)" : "var(--green)";
+  return (
+    <div style={{
+      background: "var(--bg-card)",
+      border: "1px solid var(--border)",
+      borderLeft: `3px solid ${borderColor}`,
+      borderRadius: 8, padding: "10px 12px", marginBottom: 6,
+      fontSize: 11,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
+        <span style={{ fontWeight: 600, flex: 1, lineHeight: 1.3 }} title={`${ad.name} · ${ad.campaignName}`}>
+          {shortName(ad.name, 50)}
+        </span>
+        <span style={{ fontWeight: 700, color: borderColor, fontFamily: "'IBM Plex Mono', monospace", whiteSpace: "nowrap" }}>
+          {fmt$(ad.spend)}
+        </span>
+      </div>
+      <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 4 }}>
+        {ad.actionReason}
+      </div>
+      <div style={{ fontSize: 9, color: "var(--muted)", fontFamily: "'IBM Plex Mono', monospace", display: "flex", gap: 10 }}>
+        <span>CPL {ad.cpl > 0 ? `$${ad.cpl.toFixed(0)}` : "—"}</span>
+        <span>CTR {ad.ctr.toFixed(2)}%</span>
+        <span>Freq {ad.frequency.toFixed(2)}</span>
+        <span>{ad.leads} leads</span>
+      </div>
     </div>
   );
 }
